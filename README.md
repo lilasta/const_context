@@ -4,7 +4,7 @@
 
 ```
 [dependencies]
-const_context = { git = "https://github.com/woppopo/const_context" }
+const_context = { git = "https://github.com/lilasta/const_context" }
 ```
 
 ```rust
