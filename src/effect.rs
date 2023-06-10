@@ -20,11 +20,6 @@ where
     type Ret = Ret;
 }
 
-type Dummy = impl Fn();
-fn _dummy() {
-    let _: Dummy = _dummy;
-}
-
 pub struct EffectListEnd;
 
 pub struct EffectListHas<Name, Args, Effect, Next>(PhantomData<(Name, Args, Effect, Next)>);
@@ -41,7 +36,7 @@ impl EffectList for EffectListEnd {
     type Name = ();
     type Next = EffectListEnd;
     type Args = ();
-    type Effect = Dummy;
+    type Effect = fn();
     const IS_END: bool = true;
 }
 

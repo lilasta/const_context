@@ -8,10 +8,8 @@
 #![feature(const_type_name)]
 #![feature(core_intrinsics)]
 #![feature(fn_traits)]
-#![feature(impl_trait_in_assoc_type)]
 #![feature(inline_const)]
 #![feature(tuple_trait)]
-#![feature(type_alias_impl_trait)]
 #![feature(unboxed_closures)]
 
 pub mod action;
