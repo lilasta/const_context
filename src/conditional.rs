@@ -2,14 +2,11 @@ use core::marker::PhantomData;
 
 use crate::{is_variable_in, Action, ConstVariable, VariableList};
 
-pub trait TypeBool {}
-
 pub struct True;
-
-impl TypeBool for True {}
-
 pub struct False;
 
+pub trait TypeBool {}
+impl TypeBool for True {}
 impl TypeBool for False {}
 
 pub trait IntoBool {

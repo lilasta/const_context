@@ -1,6 +1,7 @@
 #![feature(inline_const)]
 
-use const_context::{ctx, Action};
+use const_context::action::Action;
+use const_context::ctx;
 
 struct Id<const N: usize>;
 type Var1 = (Id<1>, u32);

@@ -502,42 +502,43 @@ macro_rules! ctx_set {
         #[doc(hidden)]
         #[allow(unused_parens)]
         struct __CustomVariableList
-            <Input: $crate::VariableList, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
+            <Input: $crate::variable::VariableList, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
             (::core::marker::PhantomData<(Input, $($generic_name,)*)>);
 
         #[doc(hidden)]
-        impl<Input: $crate::VariableList, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::VariableList
+        impl<Input: $crate::variable::VariableList, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::variable::VariableList
         for __CustomVariableList<Input, $($generic_name,)* $($generic_const,)*>
         where
-            Input: $crate::VariableList,
+            Input: $crate::variable::VariableList,
             $($generic_bound)*
         {
             type Next = Input;
-            type Key = <$dst as $crate::ConstVariable>::Key;
-            type Value = <$dst as $crate::ConstVariable>::Value;
-            const VALUE: $crate::VariableListValue<$crate::ConstValue> = $crate::VariableListValue::Has({
-                $(let $bind = $crate::find_variable::<
+            type Key = <$dst as $crate::variable::ConstVariable>::Key;
+            type Value = <$dst as $crate::variable::ConstVariable>::Value;
+            const VALUE: $crate::variable::VariableListValue<$crate::value::ConstValue> = $crate::variable::VariableListValue::Has({
+                $(let $bind = $crate::variable::find_variable::<
                     Input,
-                    <$from as $crate::ConstVariable>::Key,
-                    <$from as $crate::ConstVariable>::Value>();)*
-                $crate::ConstValue::new::<<$dst as $crate::ConstVariable>::Value>($expr)
+                    <$from as $crate::variable::ConstVariable>::Key,
+                    <$from as $crate::variable::ConstVariable>::Value>();)*
+                $crate::value::ConstValue::new::<<$dst as $crate::variable::ConstVariable>::Value>($expr)
             });
         }
 
         #[doc(hidden)]
-        impl<$($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::Action
+        impl<$($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::action::Action
         for __CustomSetAction<$($generic_name,)* $($generic_const,)*>
         where
             $($generic_bound)*
         {
             type Output = ();
-            type Vars<Vars: $crate::VariableList> = __CustomVariableList<Vars, $($generic_name,)* $($generic_const,)*>;
+            type Effects<Effects: $crate::effect::EffectList> = Effects;
+            type Vars<Vars: $crate::variable::VariableList> = __CustomVariableList<Vars, $($generic_name,)* $($generic_const,)*>;
 
             #[inline(always)]
-            fn eval<Vars: $crate::VariableList>(self) -> Self::Output {
+            fn eval<Effects: $crate::effect::EffectList, Vars: $crate::variable::VariableList>(self) -> Self::Output {
                 #[allow(path_statements)]
                 const {
-                    <Self::Vars<Vars> as $crate::VariableList>::VALUE;
+                    <Self::Vars<Vars> as $crate::variable::VariableList>::VALUE;
                 }
             }
         }

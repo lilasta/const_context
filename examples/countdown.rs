@@ -1,6 +1,7 @@
 #![feature(inline_const)]
 
-use const_context::{ctx, Action};
+use const_context::action::Action;
+use const_context::ctx;
 
 #[derive(PartialEq, Eq)]
 enum Countdown {
