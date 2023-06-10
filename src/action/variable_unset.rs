@@ -1,8 +1,7 @@
 use core::marker::PhantomData;
 
-use crate::action::Action;
-use crate::effect::EffectList;
-use crate::variable::{ConstVariable, VariableList, VariableListRemoved};
+use crate::action::{Action, ActionContext};
+use crate::variable::{ConstVariable, VariableListRemoved};
 
 pub struct UnsetAction<Variable>(PhantomData<Variable>);
 
@@ -18,9 +17,11 @@ where
     Variable: ConstVariable,
 {
     type Output = ();
-    type Effects<Effects: EffectList> = Effects;
-    type Vars<Vars: VariableList> = VariableListRemoved<Variable::Key, Vars>;
+    type Context<Ctx: ActionContext> = (
+        Ctx::Effects,
+        VariableListRemoved<Variable::Key, Ctx::Variables>,
+    );
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {}
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {}
 }

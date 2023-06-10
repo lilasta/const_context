@@ -13,12 +13,26 @@ use crate::variable::{VariableList, VariableListEnd};
 
 pub trait Action: Sized {
     type Output;
-    type Effects<Effects: EffectList>: EffectList;
-    type Vars<Vars: VariableList>: VariableList;
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output;
+
+    type Context<Ctx: ActionContext>: ActionContext;
+    fn eval<Ctx: ActionContext>(self) -> Self::Output;
 
     #[inline(always)]
     fn start_eval(self) -> Self::Output {
-        self.eval::<EffectListEnd, VariableListEnd>()
+        self.eval::<(EffectListEnd, VariableListEnd)>()
     }
+}
+
+pub trait ActionContext {
+    type Effects: EffectList;
+    type Variables: VariableList;
+}
+
+impl<E, V> ActionContext for (E, V)
+where
+    E: EffectList,
+    V: VariableList,
+{
+    type Effects = E;
+    type Variables = V;
 }

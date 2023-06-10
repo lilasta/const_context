@@ -1,8 +1,7 @@
 use core::marker::PhantomData;
 
-use crate::action::Action;
-use crate::effect::EffectList;
-use crate::variable::{find_variable, ConstVariable, VariableList};
+use crate::action::{Action, ActionContext};
+use crate::variable::{find_variable, ConstVariable};
 
 pub struct GetAction<Variable>(PhantomData<Variable>);
 
@@ -18,11 +17,10 @@ where
     Variable: ConstVariable,
 {
     type Output = Variable::Value;
-    type Effects<Effects: EffectList> = Effects;
-    type Vars<Vars: VariableList> = Vars;
+    type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {
-        const { find_variable::<Vars, Variable::Key, Variable::Value>() }
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+        const { find_variable::<Ctx::Variables, Variable::Key, Variable::Value>() }
     }
 }

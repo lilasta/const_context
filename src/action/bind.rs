@@ -1,6 +1,4 @@
-use crate::action::Action;
-use crate::effect::EffectList;
-use crate::variable::VariableList;
+use crate::action::{Action, ActionContext};
 
 pub struct BindAction<PreviousAction, ActionConstructor>(PreviousAction, ActionConstructor);
 
@@ -23,13 +21,12 @@ where
     NextAction: Action,
 {
     type Output = NextAction::Output;
-    type Effects<Effects: EffectList> = NextAction::Effects<PreviousAction::Effects<Effects>>;
-    type Vars<Vars: VariableList> = NextAction::Vars<PreviousAction::Vars<Vars>>;
+    type Context<Ctx: ActionContext> = NextAction::Context<PreviousAction::Context<Ctx>>;
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
         let Self(action, constructor) = self;
-        let output = action.eval::<Effects, Vars>();
-        constructor(output).eval::<PreviousAction::Effects<Effects>, PreviousAction::Vars<Vars>>()
+        let output = action.eval::<Ctx>();
+        constructor(output).eval::<PreviousAction::Context<Ctx>>()
     }
 }

@@ -531,14 +531,13 @@ macro_rules! ctx_set {
             $($generic_bound)*
         {
             type Output = ();
-            type Effects<Effects: $crate::effect::EffectList> = Effects;
-            type Vars<Vars: $crate::variable::VariableList> = __CustomVariableList<Vars, $($generic_name,)* $($generic_const,)*>;
+            type Context<Ctx: $crate::action::ActionContext> = (Ctx::Effects, __CustomVariableList<Ctx::Variables, $($generic_name,)* $($generic_const,)*>);
 
             #[inline(always)]
-            fn eval<Effects: $crate::effect::EffectList, Vars: $crate::variable::VariableList>(self) -> Self::Output {
+            fn eval<Ctx: $crate::action::ActionContext>(self) -> Self::Output {
                 #[allow(path_statements)]
                 const {
-                    <Self::Vars<Vars> as $crate::variable::VariableList>::VALUE;
+                    <<Self::Context<Ctx> as $crate::action::ActionContext>::Variables as $crate::variable::VariableList>::VALUE;
                 }
             }
         }

@@ -1,6 +1,4 @@
-use crate::action::Action;
-use crate::effect::EffectList;
-use crate::variable::VariableList;
+use crate::action::{Action, ActionContext};
 
 pub struct PureAction<Value>(Value);
 
@@ -13,11 +11,10 @@ impl<Value> PureAction<Value> {
 
 impl<Value> Action for PureAction<Value> {
     type Output = Value;
-    type Effects<Effects: EffectList> = Effects;
-    type Vars<Vars: VariableList> = Vars;
+    type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
         self.0
     }
 }

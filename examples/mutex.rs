@@ -4,7 +4,9 @@
 use core::ops::{Deref, DerefMut};
 use std::sync::{LockResult, Mutex, MutexGuard, PoisonError};
 
-use const_context::{ctx, ctx_if, Action, ConstVariable};
+use const_context::action::Action;
+use const_context::variable::ConstVariable;
+use const_context::{ctx, ctx_if};
 
 pub type Id = usize;
 

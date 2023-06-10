@@ -1,7 +1,4 @@
-use crate::action::Action;
-use crate::effect::EffectList;
-use crate::variable::VariableList;
-
+use crate::action::{Action, ActionContext};
 pub struct LazyAction<Closure>(Closure);
 
 impl<Closure> LazyAction<Closure> {
@@ -17,12 +14,11 @@ where
     A: Action,
 {
     type Output = A::Output;
-    type Effects<Effects: EffectList> = A::Effects<Effects>;
-    type Vars<Vars: VariableList> = A::Vars<Vars>;
+    type Context<Ctx: ActionContext> = A::Context<Ctx>;
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
         let Self(closure) = self;
-        closure().eval::<Effects, Vars>()
+        closure().eval::<Ctx>()
     }
 }

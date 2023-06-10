@@ -1,8 +1,7 @@
 use core::marker::PhantomData;
 
-use crate::action::Action;
-use crate::effect::{Effect, EffectList};
-use crate::variable::VariableList;
+use crate::action::{Action, ActionContext};
+use crate::effect::Effect;
 
 pub struct GetEffectAction<Function>(PhantomData<Function>);
 
@@ -18,12 +17,13 @@ where
     Function: Effect,
 {
     type Output = CallWrapper<Function::Args, Function::Ret>;
-    type Effects<Effects: EffectList> = Effects;
-    type Vars<Vars: VariableList> = Vars;
+    type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {
-        CallWrapper(crate::effect::call::<Effects, Function::Name, Function::Args, Function::Ret>)
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+        CallWrapper(
+            crate::effect::call::<Ctx::Effects, Function::Name, Function::Args, Function::Ret>,
+        )
     }
 }
 

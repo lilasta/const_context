@@ -1,8 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::Action;
-use crate::effect::EffectList;
-use crate::variable::VariableList;
+use crate::action::{Action, ActionContext};
 
 pub struct PanicAction<const MSG: &'static str, T>(PhantomData<T>);
 
@@ -15,11 +13,10 @@ impl<const MSG: &'static str, T> PanicAction<MSG, T> {
 
 impl<const MSG: &'static str, T> Action for PanicAction<MSG, T> {
     type Output = T;
-    type Effects<Effects: EffectList> = Effects;
-    type Vars<Vars: VariableList> = Vars;
+    type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Effects: EffectList, Vars: VariableList>(self) -> Self::Output {
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
         const { panic!("{}", MSG) }
     }
 }

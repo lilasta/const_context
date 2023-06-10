@@ -1,6 +1,7 @@
 use core::marker::PhantomData;
 
-use crate::{is_variable_in, Action, ConstVariable, VariableList};
+use crate::action::{Action, ActionContext};
+use crate::variable::{is_variable_in, ConstVariable, VariableList};
 
 pub struct True;
 pub struct False;
@@ -109,19 +110,19 @@ where
     B: Action<Output = Output>,
 {
     type Output = Output;
-    type Vars<Vars: VariableList> = <<SelectAction<
+    type Context<Ctx: ActionContext> = <<SelectAction<
         A,
         B,
-        <Cond::From<Vars> as IntoTypeBool>::Into,
+        <Cond::From<Ctx::Variables> as IntoTypeBool>::Into,
         Output,
-    > as Select<Output>>::Action as Action>::Vars<Vars>;
+    > as Select<Output>>::Action as Action>::Context<Ctx>;
 
     #[inline(always)]
-    fn eval<Vars: VariableList>(self) -> Self::Output {
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
         let Self(a, b, ..) = self;
-        SelectAction::<A, B, <Cond::From<Vars> as IntoTypeBool>::Into, Output>::new(a, b)
+        SelectAction::<A, B, <Cond::From<Ctx::Variables> as IntoTypeBool>::Into, Output>::new(a, b)
             .selected()
-            .eval::<Vars>()
+            .eval::<Ctx>()
     }
 }
 
@@ -158,19 +159,19 @@ macro_rules! ctx_if_construct {
 
         #[doc(hidden)]
         impl $crate::conditional::IntoBoolFromVariableList for __Condition {
-            type From<Vars: $crate::VariableList> = __ConditionBool<Vars>;
+            type From<Vars: $crate::variable::VariableList> = __ConditionBool<Vars>;
         }
 
         #[doc(hidden)]
-        struct __ConditionBool<Vars: $crate::VariableList>(::core::marker::PhantomData<Vars>);
+        struct __ConditionBool<Vars: $crate::variable::VariableList>(::core::marker::PhantomData<Vars>);
 
         #[doc(hidden)]
-        impl<Vars: $crate::VariableList> $crate::conditional::IntoBool for __ConditionBool<Vars> {
+        impl<Vars: $crate::variable::VariableList> $crate::conditional::IntoBool for __ConditionBool<Vars> {
             const BOOL: bool = {
-                $(let $id = $crate::find_variable::<
+                $(let $id = $crate::variable::find_variable::<
                     Vars,
-                    <$var as $crate::ConstVariable>::Key,
-                    <$var as $crate::ConstVariable>::Value>();)*
+                    <$var as $crate::variable::ConstVariable>::Key,
+                    <$var as $crate::variable::ConstVariable>::Value>();)*
                 $cond
             };
         }
