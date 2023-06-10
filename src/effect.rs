@@ -34,6 +34,7 @@ pub trait EffectList {
     type Next: EffectList;
     type Args: 'static + Tuple;
     type Effect: 'static + Fn<Self::Args>;
+    const IS_END: bool;
 }
 
 impl EffectList for EffectListEnd {
@@ -41,6 +42,7 @@ impl EffectList for EffectListEnd {
     type Next = EffectListEnd;
     type Args = ();
     type Effect = Dummy;
+    const IS_END: bool = true;
 }
 
 impl<Name: 'static, Args: 'static + Tuple, Effect: 'static + Fn<Args>, Next: EffectList> EffectList
@@ -50,6 +52,7 @@ impl<Name: 'static, Args: 'static + Tuple, Effect: 'static + Fn<Args>, Next: Eff
     type Next = Next;
     type Args = Args;
     type Effect = Effect;
+    const IS_END: bool = false;
 }
 
 #[track_caller]
@@ -59,6 +62,8 @@ where
     Name: 'static,
     Args: 'static + Tuple,
 {
+    assert!(!List::IS_END);
+
     if type_eq::<Name, List::Name>() && type_eq::<Args, List::Args>() {
         unsafe {
             let f = MaybeUninit::<List::Effect>::uninit().assume_init();
