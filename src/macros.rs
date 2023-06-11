@@ -135,12 +135,16 @@ macro_rules! ctx_action {
         $crate::action::variable_get::GetAction::<$cvar>::new()
     };
     (set $var:ty = $e:expr) => {{
-        struct __ConstValue;
-        impl $crate::value::ConstValue for __ConstValue {
-            type Type = <$var as $crate::variable::ConstVariable>::Value;
-            const VALUE: Self::Type = $e;
+        #[doc(hidden)]
+        struct __ConstValue<Var>(Var);
+
+        #[doc(hidden)]
+        impl<Var: $crate::variable::ConstVariable> $crate::value::ConstValue for __ConstValue<Var> {
+            type Type = Var::Value;
+            const VALUE: Self::Type = unsafe { $crate::value::__transmute_copy_hack(&$e) };
         }
-        $crate::action::variable_set::SetAction::<$var, __ConstValue>::new()
+
+        $crate::action::variable_set::SetAction::<$var, __ConstValue<$var>>::new()
     }};
     (set $($rest:tt)*) => {
         $crate::ctx_set! {
@@ -158,11 +162,15 @@ macro_rules! ctx_action {
         $crate::action::effect_get::GetEffectAction::<$f>::new()
     };
     (panic $msg:expr) => {{
+        #[doc(hidden)]
         struct __PanicMsg;
+
+        #[doc(hidden)]
         impl $crate::action::panic::PanicMessage for __PanicMsg {
             const MSG: &'static str = $msg;
         }
-        $crate::action::panic::PanicAction::<__PanicMsg>::new()
+
+        $crate::action::panic::PanicAction::<__PanicMsg, _>::new()
     }};
     ($action:expr) => {
         $action
