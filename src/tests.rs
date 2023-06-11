@@ -98,15 +98,11 @@ fn test() {
         id_u64 <- effect Id;
         let a = id_u64(21);
 
-        /*
         type Var = ((), u64);
         set Var = id_u64(21) where id_u64 <- effect Id;
         b <- get Var;
 
         pure (a + b)
-        */
-
-        pure (a * 2)
     };
 
     assert_eq!(action.start_eval(), 42);

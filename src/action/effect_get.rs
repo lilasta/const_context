@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::effect::{Effect, EffectWrapper};
+use crate::effect::{Effect, RuntimeEffect};
 
 pub struct GetEffectAction<Eff>(PhantomData<Eff>);
 
@@ -16,7 +16,7 @@ impl<Eff> Action for GetEffectAction<Eff>
 where
     Eff: Effect,
 {
-    type Output = EffectWrapper<Eff>;
+    type Output = RuntimeEffect<Eff>;
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]

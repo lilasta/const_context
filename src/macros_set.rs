@@ -664,7 +664,7 @@ macro_rules! ctx_set {
                     Ctx::Variables,
                     <$from as $crate::variable::ConstVariable>::Key,
                     <$from as $crate::variable::ConstVariable>::Value>();)*
-                $(let $bind_eff = $crate::effect::get::<Ctx::Effects, $eff>();)*
+                $(let $bind_eff = $crate::effect::get_const::<Ctx::Effects, $eff>();)*
                 $crate::value::ConstValue::new::<<$dst as $crate::variable::ConstVariable>::Value>($expr)
             });
         }

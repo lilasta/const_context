@@ -33,7 +33,8 @@ pub struct EffectListHas<Eff, EffConcrete, Next>(PhantomData<(Eff, EffConcrete, 
 pub trait EffectList {
     type Effect: Effect;
     type EffectConcrete: 'static
-        + ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>;
+        + ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>
+        + ~const Destruct;
 
     type Next: EffectList;
     const IS_END: bool;
@@ -59,7 +60,6 @@ where
     const IS_END: bool = false;
 }
 
-#[track_caller]
 pub const fn call<List, Eff>(args: Eff::Args) -> Eff::Output
 where
     List: EffectList,
@@ -74,7 +74,7 @@ where
     } {
         unsafe {
             #[allow(invalid_value)]
-            let func = MaybeUninit::<&'static List::EffectConcrete>::uninit().assume_init();
+            let func = MaybeUninit::<List::EffectConcrete>::uninit().assume_init();
             let args = core::mem::transmute_copy::<_, <List::Effect as Effect>::Args>(&args);
             let ret = func.call(args);
             return core::mem::transmute_copy::<_, Eff::Output>(&ret);
@@ -84,42 +84,68 @@ where
     call::<List::Next, Eff>(args)
 }
 
-#[track_caller]
-pub const fn get<List, Eff>() -> EffectWrapper<Eff>
+pub const fn get<List, Eff>() -> RuntimeEffect<Eff>
 where
     List: EffectList,
     Eff: Effect,
 {
-    EffectWrapper(call::<List, Eff>)
+    RuntimeEffect(call::<List, Eff>)
 }
 
-pub struct EffectWrapper<Eff: Effect>(fn(Eff::Args) -> Eff::Output);
-
-impl<Eff: Effect> const FnOnce<Eff::Args> for EffectWrapper<Eff>
+pub const fn get_const<List, Eff>() -> ConstEffect<List, Eff>
 where
-    fn(Eff::Args) -> Eff::Output: ~const FnOnce(Eff::Args) -> Eff::Output,
+    List: EffectList,
+    Eff: Effect,
 {
+    ConstEffect(PhantomData)
+}
+
+pub struct RuntimeEffect<Eff: Effect>(fn(Eff::Args) -> Eff::Output);
+
+impl<Eff: Effect> FnOnce<Eff::Args> for RuntimeEffect<Eff> {
     type Output = Eff::Output;
 
+    #[inline(always)]
     extern "rust-call" fn call_once(self, args: Eff::Args) -> Self::Output {
         self.0.call_once((args,))
     }
 }
 
-impl<Eff: Effect> const FnMut<Eff::Args> for EffectWrapper<Eff>
-where
-    fn(Eff::Args) -> Eff::Output: ~const FnMut(Eff::Args) -> Eff::Output,
-{
+impl<Eff: Effect> FnMut<Eff::Args> for RuntimeEffect<Eff> {
+    #[inline(always)]
     extern "rust-call" fn call_mut(&mut self, args: Eff::Args) -> Self::Output {
         self.0.call_mut((args,))
     }
 }
 
-impl<Eff: Effect> const Fn<Eff::Args> for EffectWrapper<Eff>
-where
-    fn(Eff::Args) -> Eff::Output: ~const Fn(Eff::Args) -> Eff::Output,
-{
+impl<Eff: Effect> Fn<Eff::Args> for RuntimeEffect<Eff> {
+    #[inline(always)]
     extern "rust-call" fn call(&self, args: Eff::Args) -> Self::Output {
         self.0.call((args,))
+    }
+}
+
+pub struct ConstEffect<List: EffectList, Eff: Effect>(PhantomData<(List, Eff)>);
+
+impl<List: EffectList, Eff: Effect> const FnOnce<Eff::Args> for ConstEffect<List, Eff> {
+    type Output = Eff::Output;
+
+    #[inline(always)]
+    extern "rust-call" fn call_once(self, args: Eff::Args) -> Self::Output {
+        call::<List, Eff>(args)
+    }
+}
+
+impl<List: EffectList, Eff: Effect> const FnMut<Eff::Args> for ConstEffect<List, Eff> {
+    #[inline(always)]
+    extern "rust-call" fn call_mut(&mut self, args: Eff::Args) -> Self::Output {
+        call::<List, Eff>(args)
+    }
+}
+
+impl<List: EffectList, Eff: Effect> const Fn<Eff::Args> for ConstEffect<List, Eff> {
+    #[inline(always)]
+    extern "rust-call" fn call(&self, args: Eff::Args) -> Self::Output {
+        call::<List, Eff>(args)
     }
 }
