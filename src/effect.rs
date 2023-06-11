@@ -1,73 +1,125 @@
-use core::marker::{PhantomData, Tuple};
+use core::marker::{Destruct, PhantomData, Tuple};
 use core::mem::MaybeUninit;
 
 use crate::utils::type_eq;
 
 pub trait Effect {
     type Name: 'static;
-    type Args: 'static + Tuple;
-    type Ret: 'static;
+    type Args: 'static + Tuple + ~const Destruct;
+    type Output: 'static + ~const Destruct;
 }
 
-impl<Name, Args, Ret> Effect for (Name, Args, Ret)
+impl Effect for () {
+    type Name = ();
+    type Args = ();
+    type Output = ();
+}
+
+impl<Name, Args, Output> Effect for (Name, Args, Output)
 where
     Name: 'static,
     Args: 'static + Tuple,
-    Ret: 'static,
+    Output: 'static + ~const Destruct,
 {
     type Name = Name;
     type Args = Args;
-    type Ret = Ret;
+    type Output = Output;
 }
 
 pub struct EffectListEnd;
 
-pub struct EffectListHas<Name, Args, Effect, Next>(PhantomData<(Name, Args, Effect, Next)>);
+pub struct EffectListHas<Eff, EffConcrete, Next>(PhantomData<(Eff, EffConcrete, Next)>);
 
 pub trait EffectList {
-    type Name: 'static;
+    type Effect: Effect;
+    type EffectConcrete: 'static
+        + ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>;
+
     type Next: EffectList;
-    type Args: 'static + Tuple;
-    type Effect: 'static + Fn<Self::Args>;
     const IS_END: bool;
 }
 
 impl EffectList for EffectListEnd {
-    type Name = ();
+    type Effect = ();
+    type EffectConcrete = fn();
+
     type Next = EffectListEnd;
-    type Args = ();
-    type Effect = fn();
     const IS_END: bool = true;
 }
 
-impl<Name: 'static, Args: 'static + Tuple, Effect: 'static + Fn<Args>, Next: EffectList> EffectList
-    for EffectListHas<Name, Args, Effect, Next>
+impl<Eff, EffConcrete, Next: EffectList> EffectList for EffectListHas<Eff, EffConcrete, Next>
+where
+    Eff: Effect,
+    EffConcrete: 'static + Fn<Eff::Args, Output = Eff::Output>,
 {
-    type Name = Name;
+    type Effect = Eff;
+    type EffectConcrete = EffConcrete;
+
     type Next = Next;
-    type Args = Args;
-    type Effect = Effect;
     const IS_END: bool = false;
 }
 
 #[track_caller]
-pub fn call<List, Name, Args, Ret>(args: Args) -> Ret
+pub const fn call<List, Eff>(args: Eff::Args) -> Eff::Output
 where
     List: EffectList,
-    Name: 'static,
-    Args: 'static + Tuple,
+    Eff: Effect,
 {
     assert!(!List::IS_END);
 
-    if type_eq::<Name, List::Name>() && type_eq::<Args, List::Args>() {
+    if const {
+        type_eq::<Eff::Name, <List::Effect as Effect>::Name>()
+            && type_eq::<Eff::Args, <List::Effect as Effect>::Args>()
+            && type_eq::<Eff::Output, <List::Effect as Effect>::Output>()
+    } {
         unsafe {
-            let f = MaybeUninit::<List::Effect>::uninit().assume_init();
-            let ret = core::mem::transmute_copy::<_, Ret>(
-                &f.call(core::mem::transmute_copy::<_, List::Args>(&args)),
-            );
-            return ret;
+            #[allow(invalid_value)]
+            let func = MaybeUninit::<&'static List::EffectConcrete>::uninit().assume_init();
+            let args = core::mem::transmute_copy::<_, <List::Effect as Effect>::Args>(&args);
+            let ret = func.call(args);
+            return core::mem::transmute_copy::<_, Eff::Output>(&ret);
         };
     }
 
-    call::<List::Next, Name, Args, Ret>(args)
+    call::<List::Next, Eff>(args)
+}
+
+#[track_caller]
+pub const fn get<List, Eff>() -> EffectWrapper<Eff>
+where
+    List: EffectList,
+    Eff: Effect,
+{
+    EffectWrapper(call::<List, Eff>)
+}
+
+pub struct EffectWrapper<Eff: Effect>(fn(Eff::Args) -> Eff::Output);
+
+impl<Eff: Effect> const FnOnce<Eff::Args> for EffectWrapper<Eff>
+where
+    fn(Eff::Args) -> Eff::Output: ~const FnOnce(Eff::Args) -> Eff::Output,
+{
+    type Output = Eff::Output;
+
+    extern "rust-call" fn call_once(self, args: Eff::Args) -> Self::Output {
+        self.0.call_once((args,))
+    }
+}
+
+impl<Eff: Effect> const FnMut<Eff::Args> for EffectWrapper<Eff>
+where
+    fn(Eff::Args) -> Eff::Output: ~const FnMut(Eff::Args) -> Eff::Output,
+{
+    extern "rust-call" fn call_mut(&mut self, args: Eff::Args) -> Self::Output {
+        self.0.call_mut((args,))
+    }
+}
+
+impl<Eff: Effect> const Fn<Eff::Args> for EffectWrapper<Eff>
+where
+    fn(Eff::Args) -> Eff::Output: ~const Fn(Eff::Args) -> Eff::Output,
+{
+    extern "rust-call" fn call(&self, args: Eff::Args) -> Self::Output {
+        self.0.call((args,))
+    }
 }

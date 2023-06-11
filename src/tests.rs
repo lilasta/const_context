@@ -87,15 +87,26 @@ fn test() {
 
     assert_eq!(action.start_eval(), ());
 
-    fn id_u64(n: u64) -> u64 {
+    const fn id_u64(n: u64) -> u64 {
         n
     }
 
     let action = ctx! {
         type Id = ((), (u64, ), u64);
         effect Id = id_u64;
-        id_u64 <- get effect Id;
-        pure id_u64(42)
+
+        id_u64 <- effect Id;
+        let a = id_u64(21);
+
+        /*
+        type Var = ((), u64);
+        set Var = id_u64(21) where id_u64 <- effect Id;
+        b <- get Var;
+
+        pure (a + b)
+        */
+
+        pure (a * 2)
     };
 
     assert_eq!(action.start_eval(), 42);

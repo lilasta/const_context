@@ -7,7 +7,7 @@ type ForEachHandler<T> = ((), (T,), ());
 
 fn for_each<T: 'static, const N: usize>(l: [T; N]) -> impl Action {
     ctx! {
-       handler <- get effect ForEachHandler<T>;
+       handler <- effect ForEachHandler<T>;
        let _ = l.into_iter().for_each(handler);
     }
 }

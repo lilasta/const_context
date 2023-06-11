@@ -1,50 +1,26 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::effect::Effect;
+use crate::effect::{Effect, EffectWrapper};
 
-pub struct GetEffectAction<Function>(PhantomData<Function>);
+pub struct GetEffectAction<Eff>(PhantomData<Eff>);
 
-impl<Function> GetEffectAction<Function> {
+impl<Eff> GetEffectAction<Eff> {
     #[inline(always)]
     pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<Function> Action for GetEffectAction<Function>
+impl<Eff> Action for GetEffectAction<Eff>
 where
-    Function: Effect,
+    Eff: Effect,
 {
-    type Output = CallWrapper<Function::Args, Function::Ret>;
+    type Output = EffectWrapper<Eff>;
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {
-        CallWrapper(
-            crate::effect::call::<Ctx::Effects, Function::Name, Function::Args, Function::Ret>,
-        )
-    }
-}
-
-pub struct CallWrapper<Args, Ret>(fn(Args) -> Ret);
-
-impl<Args: core::marker::Tuple, Ret> FnOnce<Args> for CallWrapper<Args, Ret> {
-    type Output = Ret;
-
-    extern "rust-call" fn call_once(self, args: Args) -> Self::Output {
-        self.0.call_once((args,))
-    }
-}
-
-impl<Args: core::marker::Tuple, Ret> FnMut<Args> for CallWrapper<Args, Ret> {
-    extern "rust-call" fn call_mut(&mut self, args: Args) -> Self::Output {
-        self.0.call_mut((args,))
-    }
-}
-
-impl<Args: core::marker::Tuple, Ret> Fn<Args> for CallWrapper<Args, Ret> {
-    extern "rust-call" fn call(&self, args: Args) -> Self::Output {
-        self.0.call((args,))
+        crate::effect::get::<Ctx::Effects, Eff>()
     }
 }

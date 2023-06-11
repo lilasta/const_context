@@ -11,17 +11,7 @@ pub mod variable_unset;
 use crate::effect::{EffectList, EffectListEnd};
 use crate::variable::{VariableList, VariableListEnd};
 
-pub trait Action: Sized {
-    type Output;
-
-    type Context<Ctx: ActionContext>: ActionContext;
-    fn eval<Ctx: ActionContext>(self) -> Self::Output;
-
-    #[inline(always)]
-    fn start_eval(self) -> Self::Output {
-        self.eval::<(EffectListEnd, VariableListEnd)>()
-    }
-}
+pub type InitialActionContext = (EffectListEnd, VariableListEnd);
 
 pub trait ActionContext {
     type Effects: EffectList;
@@ -35,4 +25,16 @@ where
 {
     type Effects = E;
     type Variables = V;
+}
+
+pub trait Action: Sized {
+    type Output;
+    type Context<Ctx: ActionContext>: ActionContext;
+
+    #[inline(always)]
+    fn start_eval(self) -> Self::Output {
+        self.eval::<InitialActionContext>()
+    }
+
+    fn eval<Ctx: ActionContext>(self) -> Self::Output;
 }

@@ -3,23 +3,23 @@ use core::marker::PhantomData;
 use crate::action::{Action, ActionContext};
 use crate::effect::{Effect, EffectListHas};
 
-pub struct SetEffectAction<Function, FunctionConcrete>(PhantomData<(Function, FunctionConcrete)>);
+pub struct SetEffectAction<Eff, EffConcrete>(PhantomData<(Eff, EffConcrete)>);
 
-impl<Function, FunctionConcrete> SetEffectAction<Function, FunctionConcrete> {
+impl<Eff, EffConcrete> SetEffectAction<Eff, EffConcrete> {
     #[inline(always)]
-    pub fn new(_: FunctionConcrete) -> Self {
+    pub fn new(_: EffConcrete) -> Self {
         Self(PhantomData)
     }
 }
 
-impl<Function, FunctionConcrete> Action for SetEffectAction<Function, FunctionConcrete>
+impl<Eff, EffConcrete> Action for SetEffectAction<Eff, EffConcrete>
 where
-    Function: Effect,
-    FunctionConcrete: 'static + Fn<Function::Args, Output = Function::Ret>,
+    Eff: Effect,
+    EffConcrete: 'static + Fn<Eff::Args, Output = Eff::Output>,
 {
     type Output = ();
     type Context<Ctx: ActionContext> = (
-        EffectListHas<Function::Name, Function::Args, FunctionConcrete, Ctx::Effects>,
+        EffectListHas<Eff, EffConcrete, Ctx::Effects>,
         Ctx::Variables,
     );
 

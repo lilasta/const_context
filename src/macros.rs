@@ -146,11 +146,11 @@ macro_rules! ctx_action {
     (unset $cvar:ty) => {
         $crate::action::variable_unset::UnsetAction::<$cvar>::new()
     };
-    (get effect $f:ty) => {
-        $crate::action::effect_get::GetEffectAction::<$f>::new()
-    };
     (effect $f:ty = $fc:expr) => {
         $crate::action::effect_set::SetEffectAction::<$f, _>::new($fc)
+    };
+    (effect $f:ty) => {
+        $crate::action::effect_get::GetEffectAction::<$f>::new()
     };
     (panic $msg:expr) => {
         $crate::action::panic::PanicAction::<{ $msg }, _>::new()

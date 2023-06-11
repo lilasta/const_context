@@ -22,6 +22,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = []
+            effects = []
             generic_names = []
             generic_bounds = []
             generic_params = []
@@ -40,6 +41,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = []
+            effects = []
             generic_names = []
             generic_bounds = []
             generic_params = []
@@ -66,6 +68,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -78,6 +81,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -90,6 +94,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -102,6 +107,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* $name <- ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -115,6 +121,34 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
+        generic_names = [ $($generic_name:tt)* ]
+        generic_bounds = [ $($generic_bound:tt)* ]
+        generic_params = [ $($generic_param:tt)* ]
+        generic_const = [ $($generic_const:tt)* ]
+        generic_const_params = [ $($generic_const_param:tt)* ]
+        rest = [ $name:ident <- effect $($rest:tt)* ]
+    } => {
+        $crate::ctx_set! {
+            state = parse_effect_from
+            dst = [ $($dst)* ]
+            expr = [ $($expr)* ]
+            binds = [ $($bind)* ]
+            effects = [ $($effect)* $name <- ]
+            generic_names = [ $($generic_name)* ]
+            generic_bounds = [ $($generic_bound)* ]
+            generic_params = [ $($generic_param)* ]
+            generic_const = [ $($generic_const)* ]
+            generic_const_params = [ $($generic_const_param)* ]
+            rest = [ $($rest)* ]
+        }
+    };
+    {
+        state = parse_where
+        dst = [ $($dst:tt)* ]
+        expr = [ $($expr:tt)* ]
+        binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -127,6 +161,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -140,6 +175,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -152,6 +188,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* $name, ]
             generic_bounds = [ $($generic_bound)* $name : ]
             generic_params = [ $($generic_param)* ]
@@ -165,6 +202,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -177,6 +215,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* , ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -189,6 +228,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -201,6 +241,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* , ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -214,6 +255,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -226,6 +268,87 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* $other ]
+            effects = [ $($effect)* ]
+            generic_names = [ $($generic_name)* ]
+            generic_bounds = [ $($generic_bound)* ]
+            generic_params = [ $($generic_param)* ]
+            generic_const = [ $($generic_const)* ]
+            generic_const_params = [ $($generic_const_param)* ]
+            rest = [ $($rest)* ]
+        }
+    };
+    {
+        state = parse_effect_from
+        dst = [ $($dst:tt)* ]
+        expr = [ $($expr:tt)* ]
+        binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
+        generic_names = [ $($generic_name:tt)* ]
+        generic_bounds = [ $($generic_bound:tt)* ]
+        generic_params = [ $($generic_param:tt)* ]
+        generic_const = [ $($generic_const:tt)* ]
+        generic_const_params = [ $($generic_const_param:tt)* ]
+        rest = []
+    } => {
+        $crate::ctx_set! {
+            state = construct
+            dst = [ $($dst)* ]
+            expr = [ $($expr)* ]
+            binds = [ $($bind)* ]
+            effects = [ $($effect)* , ]
+            generic_names = [ $($generic_name)* ]
+            generic_bounds = [ $($generic_bound)* ]
+            generic_params = [ $($generic_param)* ]
+            generic_const = [ $($generic_const)* ]
+            generic_const_params = [ $($generic_const_param)* ]
+        }
+    };
+    {
+        state = parse_effect_from
+        dst = [ $($dst:tt)* ]
+        expr = [ $($expr:tt)* ]
+        binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
+        generic_names = [ $($generic_name:tt)* ]
+        generic_bounds = [ $($generic_bound:tt)* ]
+        generic_params = [ $($generic_param:tt)* ]
+        generic_const = [ $($generic_const:tt)* ]
+        generic_const_params = [ $($generic_const_param:tt)* ]
+        rest = [ , $($rest:tt)* ]
+    } => {
+        $crate::ctx_set! {
+            state = parse_where
+            dst = [ $($dst)* ]
+            expr = [ $($expr)* ]
+            binds = [ $($bind)* ]
+            effects = [ $($effect)* , ]
+            generic_names = [ $($generic_name)* ]
+            generic_bounds = [ $($generic_bound)* ]
+            generic_params = [ $($generic_param)* ]
+            generic_const = [ $($generic_const)* ]
+            generic_const_params = [ $($generic_const_param)* ]
+            rest = [ $($rest)* ]
+        }
+    };
+    {
+        state = parse_effect_from
+        dst = [ $($dst:tt)* ]
+        expr = [ $($expr:tt)* ]
+        binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
+        generic_names = [ $($generic_name:tt)* ]
+        generic_bounds = [ $($generic_bound:tt)* ]
+        generic_params = [ $($generic_param:tt)* ]
+        generic_const = [ $($generic_const:tt)* ]
+        generic_const_params = [ $($generic_const_param:tt)* ]
+        rest = [ $other:tt $($rest:tt)* ]
+    } => {
+        $crate::ctx_set! {
+            state = parse_effect_from
+            dst = [ $($dst)* ]
+            expr = [ $($expr)* ]
+            binds = [ $($bind)* ]
+            effects = [ $($effect)* $other ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -239,6 +362,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -251,6 +375,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -263,6 +388,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -275,6 +401,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -288,6 +415,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -300,6 +428,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
@@ -313,6 +442,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -325,6 +455,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* , ]
             generic_params = [ $($generic_param)* ]
@@ -338,6 +469,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -350,6 +482,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* 'static + ]
             generic_params = [ $($generic_param)* ]
@@ -363,6 +496,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -375,6 +509,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* , ]
             generic_params = [ $($generic_param)* ]
@@ -388,6 +523,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -400,6 +536,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* $other ]
             generic_params = [ $($generic_param)* ]
@@ -413,6 +550,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -425,6 +563,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* , ]
@@ -437,6 +576,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -449,6 +589,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* , ]
@@ -462,6 +603,7 @@ macro_rules! ctx_set {
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
         binds = [ $($bind:tt)* ]
+        effects = [ $($effect:tt)* ]
         generic_names = [ $($generic_name:tt)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:tt)* ]
@@ -474,6 +616,7 @@ macro_rules! ctx_set {
             dst = [ $($dst)* ]
             expr = [ $($expr)* ]
             binds = [ $($bind)* ]
+            effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
             generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* $other ]
@@ -487,6 +630,7 @@ macro_rules! ctx_set {
         dst = [ $dst:ty ]
         expr = [ $expr:expr ]
         binds = [ $($bind:ident <- $from:ty,)* ]
+        effects = [ $($bind_eff:ident <- $eff:ty,)* ]
         generic_names = [ $($generic_name:ident,)* ]
         generic_bounds = [ $($generic_bound:tt)* ]
         generic_params = [ $($generic_param:ty,)* ]
@@ -502,24 +646,25 @@ macro_rules! ctx_set {
         #[doc(hidden)]
         #[allow(unused_parens)]
         struct __CustomVariableList
-            <Input: $crate::variable::VariableList, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
-            (::core::marker::PhantomData<(Input, $($generic_name,)*)>);
+            <Ctx: $crate::action::ActionContext, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
+            (::core::marker::PhantomData<(Ctx, $($generic_name,)*)>);
 
         #[doc(hidden)]
-        impl<Input: $crate::variable::VariableList, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::variable::VariableList
-        for __CustomVariableList<Input, $($generic_name,)* $($generic_const,)*>
+        impl<Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::variable::VariableList
+        for __CustomVariableList<Ctx, $($generic_name,)* $($generic_const,)*>
         where
-            Input: $crate::variable::VariableList,
+            Ctx: $crate::action::ActionContext,
             $($generic_bound)*
         {
-            type Next = Input;
+            type Next = Ctx::Variables;
             type Key = <$dst as $crate::variable::ConstVariable>::Key;
             type Value = <$dst as $crate::variable::ConstVariable>::Value;
             const VALUE: $crate::variable::VariableListValue<$crate::value::ConstValue> = $crate::variable::VariableListValue::Has({
                 $(let $bind = $crate::variable::find_variable::<
-                    Input,
+                    Ctx::Variables,
                     <$from as $crate::variable::ConstVariable>::Key,
                     <$from as $crate::variable::ConstVariable>::Value>();)*
+                $(let $bind_eff = $crate::effect::get::<Ctx::Effects, $eff>();)*
                 $crate::value::ConstValue::new::<<$dst as $crate::variable::ConstVariable>::Value>($expr)
             });
         }
@@ -531,7 +676,7 @@ macro_rules! ctx_set {
             $($generic_bound)*
         {
             type Output = ();
-            type Context<Ctx: $crate::action::ActionContext> = (Ctx::Effects, __CustomVariableList<Ctx::Variables, $($generic_name,)* $($generic_const,)*>);
+            type Context<Ctx: $crate::action::ActionContext> = (Ctx::Effects, __CustomVariableList<Ctx, $($generic_name,)* $($generic_const,)*>);
 
             #[inline(always)]
             fn eval<Ctx: $crate::action::ActionContext>(self) -> Self::Output {
