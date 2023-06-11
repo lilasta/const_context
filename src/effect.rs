@@ -32,8 +32,7 @@ pub struct EffectListHas<Eff, EffConcrete, Next>(PhantomData<(Eff, EffConcrete, 
 
 pub trait EffectList {
     type Effect: Effect;
-    type EffectConcrete: 'static
-        + ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>
+    type EffectConcrete: ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>
         + ~const Destruct;
 
     type Next: EffectList;
