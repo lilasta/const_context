@@ -136,15 +136,15 @@ macro_rules! ctx_action {
     };
     (set $var:ty = $e:expr) => {{
         #[doc(hidden)]
-        struct __ConstValue<Var>(Var);
+        struct __ConstValue;
 
         #[doc(hidden)]
-        impl<Var: $crate::variable::ConstVariable> $crate::value::ConstValue for __ConstValue<Var> {
-            type Type = Var::Value;
-            const VALUE: Self::Type = unsafe { $crate::value::__transmute_copy_hack(&$e) };
+        impl $crate::value::ConstValue for __ConstValue {
+            type Type = <$var as $crate::variable::ConstVariable>::Value;
+            const VALUE: Self::Type = $e;
         }
 
-        $crate::action::variable_set::SetAction::<$var, __ConstValue<$var>>::new()
+        $crate::action::variable_set::SetAction::<$var, __ConstValue>::new()
     }};
     (set $($rest:tt)*) => {
         $crate::ctx_set! {

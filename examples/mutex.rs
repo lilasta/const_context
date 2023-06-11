@@ -1,4 +1,3 @@
-#![feature(generic_const_exprs)]
 #![feature(inline_const)]
 
 use core::ops::{Deref, DerefMut};
@@ -30,7 +29,10 @@ impl<const ID: Id, T> StaticMutex<ID, T> {
                 ctx! { panic "Double locks" }
             else
                 ctx! {
-                    set Locked<{ ID }> = ();
+                    set Locked<{ ID }> = ()
+                    where
+                        const ID: Id = ID;
+
                     pure match self.0.lock() {
                         Ok(guard) => Ok(StaticMutexGuard(guard)),
                         Err(poison) => Err(PoisonError::new(StaticMutexGuard(poison.into_inner()))),
