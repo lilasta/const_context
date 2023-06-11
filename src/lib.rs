@@ -1,10 +1,8 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(feature = "conditional", feature(associated_const_equality))]
 #![cfg_attr(feature = "conditional", feature(specialization))]
-#![feature(adt_const_params)]
 #![feature(const_heap)]
 #![feature(const_mut_refs)]
-#![feature(const_ptr_write)]
 #![feature(const_refs_to_cell)]
 #![feature(const_trait_impl)]
 #![feature(const_transmute_copy)]
@@ -13,6 +11,7 @@
 #![feature(core_intrinsics)]
 #![feature(fn_traits)]
 #![feature(inline_const)]
+#![feature(never_type)]
 #![feature(tuple_trait)]
 #![feature(unboxed_closures)]
 

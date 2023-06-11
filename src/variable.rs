@@ -1,11 +1,11 @@
-use core::marker::PhantomData;
+use core::marker::{Destruct, PhantomData};
 
 use crate::utils::{str_concat, type_eq};
 use crate::value::ConstValue;
 
 pub trait ConstVariable {
     type Key: 'static;
-    type Value: 'static;
+    type Value: 'static + ~const Destruct;
 }
 
 impl ConstVariable for () {
@@ -24,7 +24,7 @@ where
 
 pub struct VariableListEnd;
 
-pub struct VariableListHas<Var, const VALUE: ConstValue, Next>(PhantomData<(Var, Next)>);
+pub struct VariableListHas<Var, Value: ConstValue, Next>(PhantomData<(Var, Value, Next)>);
 
 pub struct VariableListRemoved<Var, Next>(PhantomData<(Var, Next)>);
 
@@ -37,27 +37,35 @@ pub enum VariableListValue<T> {
 pub trait VariableList {
     type Next: VariableList;
     type Variable: ConstVariable;
-    const VALUE: VariableListValue<ConstValue>;
+    const VALUE: VariableListValue<<Self::Variable as ConstVariable>::Value>;
 }
 
 impl VariableList for VariableListEnd {
     type Next = VariableListEnd;
     type Variable = ();
-    const VALUE: VariableListValue<ConstValue> = VariableListValue::End;
+    const VALUE: VariableListValue<<Self::Variable as ConstVariable>::Value> =
+        VariableListValue::End;
 }
 
-impl<Var: ConstVariable, const VAL: ConstValue, Next: VariableList> VariableList
-    for VariableListHas<Var, VAL, Next>
+impl<Var, Value, Next> VariableList for VariableListHas<Var, Value, Next>
+where
+    Var: ConstVariable,
+    Value: ConstValue<Type = Var::Value>,
+    Next: VariableList,
 {
     type Next = Next;
     type Variable = Var;
-    const VALUE: VariableListValue<ConstValue> = VariableListValue::Has(VAL);
+    const VALUE: VariableListValue<Var::Value> = VariableListValue::Has(Value::VALUE);
 }
 
-impl<Var: ConstVariable, Next: VariableList> VariableList for VariableListRemoved<Var, Next> {
+impl<Var, Next> VariableList for VariableListRemoved<Var, Next>
+where
+    Var: ConstVariable,
+    Next: VariableList,
+{
     type Next = Next;
     type Variable = Var;
-    const VALUE: VariableListValue<ConstValue> = VariableListValue::Removed;
+    const VALUE: VariableListValue<Var::Value> = VariableListValue::Removed;
 }
 
 const fn error_not_found<Key>() -> &'static str {
@@ -98,7 +106,12 @@ where
                 "{}",
                 error_unexpected_type::<Var::Value, <List::Variable as ConstVariable>::Value>()
             );
-            value.with_type()
+
+            unsafe {
+                let ret = core::mem::transmute_copy(&value);
+                core::mem::forget(value);
+                ret
+            }
         }
         _ => find_variable::<List::Next, Var>(),
     }

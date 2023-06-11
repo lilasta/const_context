@@ -74,9 +74,16 @@ where
         unsafe {
             #[allow(invalid_value)]
             let func = MaybeUninit::<List::EffectConcrete>::uninit().assume_init();
-            let args = core::mem::transmute_copy::<_, <List::Effect as Effect>::Args>(&args);
-            let ret = func.call(args);
-            return core::mem::transmute_copy::<_, Eff::Output>(&ret);
+            let args_copied = core::mem::transmute_copy::<_, <List::Effect as Effect>::Args>(&args);
+
+            let ret = func.call(args_copied);
+            let ret_copied = core::mem::transmute_copy::<_, Eff::Output>(&ret);
+
+            core::mem::forget(func);
+            core::mem::forget(args);
+            core::mem::forget(ret);
+
+            return ret_copied;
         };
     }
 

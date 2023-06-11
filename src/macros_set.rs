@@ -658,10 +658,10 @@ macro_rules! ctx_set {
         {
             type Next = Ctx::Variables;
             type Variable = $dst;
-            const VALUE: $crate::variable::VariableListValue<$crate::value::ConstValue> = $crate::variable::VariableListValue::Has({
+            const VALUE: $crate::variable::VariableListValue<<$dst as $crate::variable::ConstVariable>::Value> = $crate::variable::VariableListValue::Has({
                 $(let $bind = $crate::variable::find_variable::<Ctx::Variables, $from>();)*
                 $(let $bind_eff = $crate::effect::get_const::<Ctx::Effects, $eff>();)*
-                $crate::value::ConstValue::new::<<$dst as $crate::variable::ConstVariable>::Value>($expr)
+                $expr
             });
         }
 
