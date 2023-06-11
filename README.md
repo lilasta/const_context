@@ -8,8 +8,6 @@ const_context = { git = "https://github.com/lilasta/const_context" }
 ```
 
 ```rust
-#![feature(inline_const)]
-
 use const_context::action::Action;
 use const_context::ctx;
 

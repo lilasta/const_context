@@ -1,5 +1,3 @@
-#![feature(inline_const)]
-
 use core::ops::{Deref, DerefMut};
 use std::sync::{LockResult, Mutex, MutexGuard, PoisonError};
 

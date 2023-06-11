@@ -675,12 +675,7 @@ macro_rules! ctx_set {
             type Context<Ctx: $crate::action::ActionContext> = (Ctx::Effects, __CustomVariableList<Ctx, $($generic_name,)* $($generic_const,)*>);
 
             #[inline(always)]
-            fn eval<Ctx: $crate::action::ActionContext>(self) -> Self::Output {
-                #[allow(path_statements)]
-                const {
-                    <<Self::Context<Ctx> as $crate::action::ActionContext>::Variables as $crate::variable::VariableList>::VALUE;
-                }
-            }
+            fn eval<Ctx: $crate::action::ActionContext>(self) -> Self::Output {}
         }
 
         __CustomSetAction::<$($generic_param,)* $({ $generic_const_param },)*>(::core::marker::PhantomData)

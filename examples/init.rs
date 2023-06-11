@@ -1,5 +1,3 @@
-#![feature(inline_const)]
-
 use const_context::action::Action;
 use const_context::ctx;
 use const_context::variable::ConstVariable;
