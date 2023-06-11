@@ -17,10 +17,8 @@ where
     Variable: ConstVariable,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> = (
-        Ctx::Effects,
-        VariableListRemoved<Variable::Key, Ctx::Variables>,
-    );
+    type Context<Ctx: ActionContext> =
+        (Ctx::Effects, VariableListRemoved<Variable, Ctx::Variables>);
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {}

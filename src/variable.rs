@@ -24,11 +24,9 @@ where
 
 pub struct VariableListEnd;
 
-pub struct VariableListHas<Key, Value, const VALUE: ConstValue, Next>(
-    PhantomData<(Key, Value, Next)>,
-);
+pub struct VariableListHas<Var, const VALUE: ConstValue, Next>(PhantomData<(Var, Next)>);
 
-pub struct VariableListRemoved<Key, Next>(PhantomData<(Key, Next)>);
+pub struct VariableListRemoved<Var, Next>(PhantomData<(Var, Next)>);
 
 pub enum VariableListValue<T> {
     End,
@@ -38,31 +36,27 @@ pub enum VariableListValue<T> {
 
 pub trait VariableList {
     type Next: VariableList;
-    type Key: 'static;
-    type Value: 'static;
+    type Variable: ConstVariable;
     const VALUE: VariableListValue<ConstValue>;
 }
 
 impl VariableList for VariableListEnd {
     type Next = VariableListEnd;
-    type Key = ();
-    type Value = ();
+    type Variable = ();
     const VALUE: VariableListValue<ConstValue> = VariableListValue::End;
 }
 
-impl<Key: 'static, Value: 'static, const VAL: ConstValue, Next: VariableList> VariableList
-    for VariableListHas<Key, Value, VAL, Next>
+impl<Var: ConstVariable, const VAL: ConstValue, Next: VariableList> VariableList
+    for VariableListHas<Var, VAL, Next>
 {
     type Next = Next;
-    type Key = Key;
-    type Value = Value;
+    type Variable = Var;
     const VALUE: VariableListValue<ConstValue> = VariableListValue::Has(VAL);
 }
 
-impl<Key: 'static, Next: VariableList> VariableList for VariableListRemoved<Key, Next> {
+impl<Var: ConstVariable, Next: VariableList> VariableList for VariableListRemoved<Var, Next> {
     type Next = Next;
-    type Key = Key;
-    type Value = ();
+    type Variable = Var;
     const VALUE: VariableListValue<ConstValue> = VariableListValue::Removed;
 }
 
@@ -84,47 +78,55 @@ const fn error_unexpected_type<Expected, Value>() -> &'static str {
 }
 
 #[track_caller]
-pub const fn find_variable<List, Key, Value>() -> Value
+pub const fn find_variable<List, Var>() -> Var::Value
 where
     List: VariableList,
-    Key: 'static,
-    Value: 'static,
+    Var: ConstVariable,
 {
     match List::VALUE {
-        VariableListValue::End => panic!("{}", error_not_found::<Key>()),
-        VariableListValue::Removed if type_eq::<Key, List::Key>() => {
-            panic!("{}", error_not_found::<Key>())
+        VariableListValue::End => panic!("{}", error_not_found::<Var::Key>()),
+        VariableListValue::Removed
+            if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
+        {
+            panic!("{}", error_not_found::<Var::Key>())
         }
-        VariableListValue::Has(value) if type_eq::<Key, List::Key>() => {
+        VariableListValue::Has(value)
+            if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
+        {
             assert!(
-                type_eq::<Value, List::Value>(),
+                type_eq::<Var::Value, <List::Variable as ConstVariable>::Value>(),
                 "{}",
-                error_unexpected_type::<Value, List::Value>()
+                error_unexpected_type::<Var::Value, <List::Variable as ConstVariable>::Value>()
             );
             value.with_type()
         }
-        _ => find_variable::<List::Next, Key, Value>(),
+        _ => find_variable::<List::Next, Var>(),
     }
 }
 
 #[track_caller]
-pub const fn is_variable_in<List, Key, Value>() -> bool
+pub const fn is_variable_in<List, Var>() -> bool
 where
     List: VariableList,
-    Key: 'static,
-    Value: 'static,
+    Var: ConstVariable,
 {
     match List::VALUE {
         VariableListValue::End => false,
-        VariableListValue::Removed if type_eq::<Key, List::Key>() => false,
-        VariableListValue::Has(_) if type_eq::<Key, List::Key>() => {
+        VariableListValue::Removed
+            if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
+        {
+            false
+        }
+        VariableListValue::Has(_)
+            if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
+        {
             assert!(
-                type_eq::<Value, List::Value>(),
+                type_eq::<Var::Value, <List::Variable as ConstVariable>::Value>(),
                 "{}",
-                error_unexpected_type::<Value, List::Value>()
+                error_unexpected_type::<Var::Value, <List::Variable as ConstVariable>::Value>()
             );
             true
         }
-        _ => is_variable_in::<List::Next, Key, Value>(),
+        _ => is_variable_in::<List::Next, Var>(),
     }
 }

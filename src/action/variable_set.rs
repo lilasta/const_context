@@ -20,7 +20,7 @@ where
     type Output = ();
     type Context<Ctx: ActionContext> = (
         Ctx::Effects,
-        VariableListHas<Variable::Key, Variable::Value, VALUE, Ctx::Variables>,
+        VariableListHas<Variable, VALUE, Ctx::Variables>,
     );
 
     #[inline(always)]

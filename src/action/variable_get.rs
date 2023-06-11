@@ -21,6 +21,6 @@ where
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {
-        const { find_variable::<Ctx::Variables, Variable::Key, Variable::Value>() }
+        const { find_variable::<Ctx::Variables, Variable>() }
     }
 }
