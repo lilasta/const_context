@@ -484,7 +484,7 @@ macro_rules! ctx_set {
             binds = [ $($bind)* ]
             effects = [ $($effect)* ]
             generic_names = [ $($generic_name)* ]
-            generic_bounds = [ $($generic_bound)* 'static + ]
+            generic_bounds = [ $($generic_bound)* ]
             generic_params = [ $($generic_param)* ]
             generic_const = [ $($generic_const)* ]
             generic_const_params = [ $($generic_const_param)* ]
