@@ -106,4 +106,14 @@ fn test() {
     };
 
     assert_eq!(action.start_eval(), 42);
+
+    fn _test<const A: usize, T: 'static>() -> impl Action {
+        ctx! {
+            set (T, usize) = A + b
+            where
+                const A: usize = A,
+                b <- get ((), usize),
+                T: 'static = T;
+        }
+    }
 }
