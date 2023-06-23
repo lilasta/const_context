@@ -1,8 +1,14 @@
 # const_context
 
-> Note: This library rely on many nightly features. And this will never be production quality (see [weakness](#weakness)).
+> Note: This library relies on many nightly features. And this will never be production quality (see [weakness](#weakness)).
 
 A Rust library for writing mixed code of constant expressions and runtime expressions with monadic syntax.
+
+## License
+
+CC0 1.0 Universal
+
+## Cargo.toml
 
 ```toml
 [dependencies]
