@@ -48,7 +48,7 @@ The action syntax is shown below:
 |pure `EXPRESSION`|Create an action that returns `EXPRESSION`.|
 |get `VAR`|Get registered variable `VAR` in const contexts. If `VAR` is not registered in the context, this will cause a compilation error.|
 |set `VAR` = `EXPRESSION`|Register `EXPRESSION` as `VAR` in const contexts. |
-|unset `VAR`|Unregister `VAR` in const contexts. If `VAR` is not registered in the context, this will cause a compilation error.|
+|unset `VAR`|Unregister `VAR` in const contexts. If `VAR` is not registered in the context, this do nothing.|
 |effect `EFFECT` = `FUNCTION`|Register `FUNCTION` as `EFFECT` in const contexts.|
 |effect `EFFECT`|Get registered effect `EFFECT` in const contexts. If `EFFECT` is not registered in the context, this will cause a compilation error.|
 |panic "MESSAGE"|Panic when this action is instantiated. Any code that evaluates the action will cause an instantiation.|
@@ -62,8 +62,8 @@ fn where_set<const OUTER_VAL: usize, OuterT: 'static>() -> impl Action {
         set VAR<T> = VAL + eff(val)
         where
             const VAL: usize = OUTER_VAL, // Using an outer const generic parameter
-            val <- get SOMEVAR, // Using a variable in const contexts.
-            eff <- effect EFFECT, // Using an effect in const contexts.
+            val <- get SomeVar, // Using a variable in const contexts.
+            eff <- effect SomeEffect, // Using an effect in const contexts.
             T: 'static = OuterT; // Using an outer generic type parameter.
         ...
     }
