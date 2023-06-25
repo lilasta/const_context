@@ -59,6 +59,7 @@ where
     const IS_END: bool = false;
 }
 
+#[inline(always)]
 pub const fn call<List, Eff>(args: Eff::Args) -> Eff::Output
 where
     List: EffectList,
@@ -85,11 +86,12 @@ where
 
             return ret_copied;
         };
+    } else {
+        call::<List::Next, Eff>(args)
     }
-
-    call::<List::Next, Eff>(args)
 }
 
+#[inline(always)]
 pub const fn get<List, Eff>() -> RuntimeEffect<Eff>
 where
     List: EffectList,
@@ -98,6 +100,7 @@ where
     RuntimeEffect(call::<List, Eff>)
 }
 
+#[inline(always)]
 pub const fn get_const<List, Eff>() -> ConstEffect<List, Eff>
 where
     List: EffectList,
