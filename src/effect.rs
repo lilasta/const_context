@@ -1,7 +1,7 @@
 use core::marker::{Destruct, PhantomData, Tuple};
 //use core::mem::MaybeUninit;
 
-use crate::utils::type_eq;
+use crate::utils::is_same_type;
 
 pub trait Effect {
     type Name: 'static;
@@ -70,9 +70,9 @@ where
     assert!(!List::IS_END);
 
     if const {
-        type_eq::<Eff::Name, <List::Effect as Effect>::Name>()
-            && type_eq::<Eff::Args, <List::Effect as Effect>::Args>()
-            && type_eq::<Eff::Output, <List::Effect as Effect>::Output>()
+        is_same_type::<Eff::Name, <List::Effect as Effect>::Name>()
+            && is_same_type::<Eff::Args, <List::Effect as Effect>::Args>()
+            && is_same_type::<Eff::Output, <List::Effect as Effect>::Output>()
     } {
         // TODO: Effect is not available until `Fn` is marked as `#[const_trait]` again
         /*
