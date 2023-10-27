@@ -34,7 +34,9 @@ macro_rules! ctx_parse {
             $crate::action::pure::PureAction::new($name),
             {
                 // TODO: Find a way to remove the token
-                let $name = ();
+                #[doc(hidden)]
+                struct __Moved;
+                let $name = __Moved;
                 $crate::ctx_rtc_pack!($($binds)*)
             },
             #[allow(unused_variables)]
@@ -76,7 +78,9 @@ macro_rules! ctx_parse {
             $crate::action::pure::PureAction::new($name),
             {
                 // TODO: Find a way to remove the token
-                let $name = ();
+                #[doc(hidden)]
+                struct __Moved;
+                let $name = __Moved;
                 $crate::ctx_rtc_pack!($($binds)*)
             },
             #[allow(unused_variables)]

@@ -124,7 +124,6 @@ fn test() {
         c <- move a;
         let _ = drop(c);
         let _ = println!("{:?}", b);
-        let _ = println!("{:?}", a);
     };
 
     assert_eq!(action.start_eval(), ());
