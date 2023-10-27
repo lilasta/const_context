@@ -1,5 +1,6 @@
 use crate::action::{Action, ActionContext};
 
+#[derive(Clone, Copy)]
 pub struct PureAction<Value>(Value);
 
 impl<Value> PureAction<Value> {

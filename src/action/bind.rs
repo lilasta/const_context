@@ -1,23 +1,34 @@
 use crate::action::{Action, ActionContext};
 
-pub struct BindAction<PreviousAction, ActionConstructor>(PreviousAction, ActionConstructor);
+#[derive(Clone, Copy)]
+pub struct BindAction<RuntimeContext, PreviousAction, ActionConstructor>(
+    RuntimeContext,
+    PreviousAction,
+    ActionConstructor,
+);
 
-impl<PreviousAction, ActionConstructor> BindAction<PreviousAction, ActionConstructor> {
+impl<RuntimeContext, PreviousAction, ActionConstructor>
+    BindAction<RuntimeContext, PreviousAction, ActionConstructor>
+{
     #[inline(always)]
-    pub const fn new<Ret>(prev: PreviousAction, constructor: ActionConstructor) -> Self
+    pub const fn new<Ret>(
+        prev: PreviousAction,
+        rt_ctx: RuntimeContext,
+        constructor: ActionConstructor,
+    ) -> Self
     where
         PreviousAction: Action,
-        ActionConstructor: FnOnce(PreviousAction::Output) -> Ret,
+        ActionConstructor: FnOnce(PreviousAction::Output, RuntimeContext) -> Ret,
     {
-        Self(prev, constructor)
+        Self(rt_ctx, prev, constructor)
     }
 }
 
-impl<PreviousAction, ActionConstructor, NextAction> Action
-    for BindAction<PreviousAction, ActionConstructor>
+impl<RuntimeContext, PreviousAction, ActionConstructor, NextAction> Action
+    for BindAction<RuntimeContext, PreviousAction, ActionConstructor>
 where
     PreviousAction: Action,
-    ActionConstructor: FnOnce(PreviousAction::Output) -> NextAction,
+    ActionConstructor: FnOnce(PreviousAction::Output, RuntimeContext) -> NextAction,
     NextAction: Action,
 {
     type Output = NextAction::Output;
@@ -25,8 +36,8 @@ where
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {
-        let Self(action, constructor) = self;
+        let Self(rt_ctx, action, constructor) = self;
         let output = action.eval::<Ctx>();
-        constructor(output).eval::<PreviousAction::Context<Ctx>>()
+        constructor(output, rt_ctx).eval::<PreviousAction::Context<Ctx>>()
     }
 }

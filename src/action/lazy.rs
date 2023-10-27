@@ -1,4 +1,6 @@
 use crate::action::{Action, ActionContext};
+
+#[derive(Clone, Copy)]
 pub struct LazyAction<Closure>(Closure);
 
 impl<Closure> LazyAction<Closure> {

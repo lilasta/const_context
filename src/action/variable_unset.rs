@@ -4,6 +4,7 @@ use crate::action::{Action, ActionContext};
 use crate::variable::list::VariableListRemove;
 use crate::variable::Variable;
 
+#[derive(Clone, Copy)]
 pub struct UnsetAction<Var>(PhantomData<Var>);
 
 impl<Var> UnsetAction<Var> {

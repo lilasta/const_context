@@ -1,6 +1,6 @@
 # const_context
 
-> Note: This library relies on many nightly features. And this will never be production quality (see [weakness](#weakness)).
+> Note: This library relies on many nightly features. And this will never be production quality.
 
 A Rust library for writing mixed code of constant expressions and runtime expressions with monadic syntax.
 
@@ -35,8 +35,9 @@ The basic syntax is shown below:
 |-|-|
 |`ACTION`|Just return `ACTION`.|
 |`ACTION`; ...|Compose `ACTION` with subsequent actions.|
+|`IDENT1` <- move `IDENT2`; ...|Move the value (`IDENT2`) from the runtime context and bind it to `IDENT1`. It can be used once.|
 |`IDENT` <- `ACTION`; ...|Compose `ACTION` with subsequent actions. The result of `ACTION` can be used in subsequent actions with the name `IDENT`. "_" is also valid identifier.|
-|let `IDENT` (: `TYPE`)? = `EXPRESSION`; ...|Bind `IDENT` to a value of `EXPRESSION` in runtime contexts.|
+|let `IDENT` (: `TYPE`)? = `EXPRESSION`; ...|Bind `IDENT` to a value of `EXPRESSION` in the runtime context.|
 |const `IDENT` : `TYPE` = `EXPRESSION`; ...|Declare constant value.|
 |type `IDENT` = `TYPE`; ...|Declare type alias.|
 
@@ -46,11 +47,11 @@ The action syntax is shown below:
 |-|-|
 ||Equivalent to `pure ()`.|
 |pure `EXPRESSION`|Create an action that returns `EXPRESSION`.|
-|get `VAR`|Get registered variable `VAR` in const contexts. If `VAR` is not registered in the context, this will cause a compilation error.|
-|set `VAR` = `EXPRESSION`|Register `EXPRESSION` as `VAR` in const contexts. |
-|unset `VAR`|Unregister `VAR` in const contexts. If `VAR` is not registered in the context, this does nothing.|
+|get `VAR`|Get registered variable `VAR` in the const context. If `VAR` is not registered in the context, this will cause a compilation error.|
+|set `VAR` = `EXPRESSION`|Register `EXPRESSION` as `VAR` in the const context. |
+|unset `VAR`|Unregister `VAR` in the const context. If `VAR` is not registered in the context, this does nothing.|
 |effect `EFFECT` = `FUNCTION`|Register `FUNCTION` as `EFFECT` in const contexts.|
-|effect `EFFECT`|Get registered effect `EFFECT` in const contexts. If `EFFECT` is not registered in the context, this will cause a compilation error.|
+|effect `EFFECT`|Get registered effect `EFFECT` in the const context. If `EFFECT` is not registered in the context, this will cause a compilation error.|
 |panic "MESSAGE"|Panic when this action is instantiated. Any code that evaluates the action will cause an instantiation.|
 |`EXPRESSION`|Create an action with `EXPRESSION`.|
 
@@ -124,7 +125,3 @@ fn action() -> impl Action<Output = usize> {
     }
 }
 ```
-
-## Weakness
-
-This library has a fatal flaw, references are almost unusable in the `ctx!` macro. About evaluation, roughly speaking, actions are evaluated by repeatedly executing one line, returning the continuation, and so on. Since runtime contexts can only be preserved by passing a value from the result of one line to the continuation,  we can't take a reference to a variable. And, non-copyable values can only be used once at most.

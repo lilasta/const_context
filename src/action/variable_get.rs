@@ -4,6 +4,7 @@ use crate::action::{Action, ActionContext};
 use crate::variable::list::find_variable;
 use crate::variable::Variable;
 
+#[derive(Clone, Copy)]
 pub struct GetAction<Var>(PhantomData<Var>);
 
 impl<Variable> GetAction<Variable> {

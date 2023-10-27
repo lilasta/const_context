@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::variable::{is_variable_in, Variable, VariableList};
+use crate::variable::list::{is_variable_in, VariableList};
+use crate::variable::Variable;
 
 pub struct True;
 pub struct False;

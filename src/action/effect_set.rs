@@ -3,6 +3,7 @@ use core::marker::PhantomData;
 use crate::action::{Action, ActionContext};
 use crate::effect::{Effect, EffectListHas};
 
+#[derive(Clone, Copy)]
 pub struct SetEffectAction<Eff, EffConcrete>(PhantomData<(Eff, EffConcrete)>);
 
 impl<Eff, EffConcrete> SetEffectAction<Eff, EffConcrete> {

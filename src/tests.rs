@@ -62,8 +62,7 @@ fn test() {
     assert_eq!(action2.start_eval(), 90);
 
     let action = ctx! {
-        let _a = 0;
-        let _a: u32 = 0;
+        let a = 0;
         type Temp = (u64, u64);
         set Temp = 0;
         unset Temp;
@@ -74,7 +73,6 @@ fn test() {
     type Generic<T> = (T, u64);
     let action = ctx! {
         let _a = 0;
-        let _a: u32 = 0;
         type Temp = (u64, u64);
         set Temp = 42;
         set Generic<T> = a + 0
@@ -117,4 +115,17 @@ fn test() {
                 T: 'static = T;
         }
     }
+
+    #[derive(Debug)]
+    struct Test;
+    let action = ctx! {
+        let a = Test;
+        let b = Test;
+        c <- move a;
+        let _ = drop(c);
+        let _ = println!("{:?}", b);
+        let _ = println!("{:?}", a);
+    };
+
+    assert_eq!(action.start_eval(), ());
 }

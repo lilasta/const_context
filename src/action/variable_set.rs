@@ -5,6 +5,7 @@ use crate::value::ConstValue;
 use crate::variable::list::VariableListCons;
 use crate::variable::Variable;
 
+#[derive(Clone, Copy)]
 pub struct SetAction<Var, Value>(PhantomData<(Var, Value)>);
 
 impl<Var, Value> SetAction<Var, Value> {

@@ -69,8 +69,10 @@ fn main() {
     let action = ctx! {
         r1 <- a1.lock();
         r2 <- a2.lock();
-        let _v1 = r1.unwrap();
-        let _v2 = r2.unwrap();
+        v1 <- move r1;
+        v2 <- move r2;
+        let _v1 = v1.unwrap();
+        let _v2 = v2.unwrap();
     };
 
     action.start_eval();
