@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
 use crate::value::ConstValue;
-use crate::variable::{Variable, VariableListHas};
+use crate::variable::list::VariableListCons;
+use crate::variable::Variable;
 
 pub struct SetAction<Var, Value>(PhantomData<(Var, Value)>);
 
@@ -16,10 +17,10 @@ impl<Var, Value> SetAction<Var, Value> {
 impl<Var, Value> Action for SetAction<Var, Value>
 where
     Var: Variable,
-    Value: ConstValue<Type = Var::Value>,
+    Value: ConstValue<Type = Var::Type>,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListHas<Var, Value, Ctx::Variables>);
+    type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListCons<Var, Value, Ctx::Variables>);
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {}

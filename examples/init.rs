@@ -26,8 +26,8 @@ mod need_init {
     }
 
     impl Variable for Functions {
-        type Key = Self;
-        type Value = Self;
+        type Name = Self;
+        type Type = Self;
     }
 
     pub fn initialize() -> impl Action<Output = ()> {

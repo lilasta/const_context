@@ -9,9 +9,9 @@ pub mod variable_set;
 pub mod variable_unset;
 
 use crate::effect::{EffectList, EffectListEnd};
-use crate::variable::{VariableList, VariableListEnd};
+use crate::variable::list::{VariableList, VariableListEmpty};
 
-pub type InitialActionContext = (EffectListEnd, VariableListEnd);
+pub type InitialActionContext = (EffectListEnd, VariableListEmpty);
 
 pub trait ActionContext {
     type Effects: EffectList;

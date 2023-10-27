@@ -12,6 +12,9 @@
 /// assert_eq!(0u64, ConstantZeroU64::VALUE);
 /// ```
 pub trait ConstValue {
+    /// Type of value.
     type Type;
+
+    /// Constant value.
     const VALUE: Self::Type;
 }

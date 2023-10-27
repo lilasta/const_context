@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::variable::{find_variable, Variable};
+use crate::variable::list::find_variable;
+use crate::variable::Variable;
 
 pub struct GetAction<Var>(PhantomData<Var>);
 
@@ -16,7 +17,7 @@ impl<Var> Action for GetAction<Var>
 where
     Var: Variable,
 {
-    type Output = Var::Value;
+    type Output = Var::Type;
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]

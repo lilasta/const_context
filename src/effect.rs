@@ -28,7 +28,7 @@ where
 
 pub struct EffectListEnd;
 
-pub struct EffectListHas<Eff, EffConcrete, Next>(PhantomData<(Eff, EffConcrete, Next)>);
+pub struct EffectListHas<Eff, EffConcrete, Rest>(PhantomData<(Eff, EffConcrete, Rest)>);
 
 pub trait EffectList {
     type Effect: Effect;
@@ -37,7 +37,7 @@ pub trait EffectList {
     //    + ~const Destruct;
     type EffectConcrete: ~const Destruct;
 
-    type Next: EffectList;
+    type Rest: EffectList;
     const IS_END: bool;
 }
 
@@ -45,11 +45,11 @@ impl EffectList for EffectListEnd {
     type Effect = ();
     type EffectConcrete = fn();
 
-    type Next = EffectListEnd;
+    type Rest = EffectListEnd;
     const IS_END: bool = true;
 }
 
-impl<Eff, EffConcrete, Next: EffectList> EffectList for EffectListHas<Eff, EffConcrete, Next>
+impl<Eff, EffConcrete, Rest: EffectList> EffectList for EffectListHas<Eff, EffConcrete, Rest>
 where
     Eff: Effect,
     EffConcrete: 'static + Fn<Eff::Args, Output = Eff::Output>,
@@ -57,7 +57,7 @@ where
     type Effect = Eff;
     type EffectConcrete = EffConcrete;
 
-    type Next = Next;
+    type Rest = Rest;
     const IS_END: bool = false;
 }
 
@@ -93,7 +93,7 @@ where
         */
         panic!("Effect is not available until `Fn` is marked as `#[const_trait]` again")
     } else {
-        call::<List::Next, Eff>(args)
+        call::<List::Rest, Eff>(args)
     }
 }
 

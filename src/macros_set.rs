@@ -650,17 +650,17 @@ macro_rules! ctx_set {
             (::core::marker::PhantomData<(Ctx, $($generic_name,)*)>);
 
         #[doc(hidden)]
-        impl<Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::variable::VariableList
+        impl<Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::variable::list::VariableList
         for __CustomVariableList<Ctx, $($generic_name,)* $($generic_const,)*>
         where
             Ctx: $crate::action::ActionContext,
             $($generic_bound)*
         {
-            type Next = Ctx::Variables;
+            type Rest = Ctx::Variables;
             type Var = $dst;
-            const TYPE: $crate::variable::VariableListType = $crate::variable::VariableListType::Has;
-            const VALUE: <$dst as $crate::variable::Variable>::Value = {
-                $(let $bind = $crate::variable::find_variable::<Ctx::Variables, $from>();)*
+            const KIND: $crate::variable::list::VariableListKind = $crate::variable::list::VariableListKind::Cons;
+            const VALUE: <$dst as $crate::variable::Variable>::Type = {
+                $(let $bind = $crate::variable::list::find_variable::<Ctx::Variables, $from>();)*
                 $(let $bind_eff = $crate::effect::get_const::<Ctx::Effects, $eff>();)*
                 $expr
             };

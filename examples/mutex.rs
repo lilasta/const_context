@@ -10,8 +10,8 @@ pub type Id = usize;
 pub struct Locked<const ID: Id>;
 
 impl<const ID: Id> Variable for Locked<ID> {
-    type Key = Self;
-    type Value = ();
+    type Name = Self;
+    type Type = ();
 }
 
 pub struct StaticMutex<const ID: Id, T>(Mutex<T>);
