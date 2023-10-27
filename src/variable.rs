@@ -28,23 +28,24 @@ pub struct VariableListHas<Var, Value: ConstValue, Next>(PhantomData<(Var, Value
 
 pub struct VariableListRemoved<Var, Next>(PhantomData<(Var, Next)>);
 
-pub enum VariableListValue<T> {
+pub enum VariableListType {
     End,
-    Has(T),
+    Has,
     Removed,
 }
 
 pub trait VariableList {
     type Next: VariableList;
     type Variable: ConstVariable;
-    const VALUE: VariableListValue<<Self::Variable as ConstVariable>::Value>;
+    const TYPE: VariableListType;
+    const VALUE: <Self::Variable as ConstVariable>::Value;
 }
 
 impl VariableList for VariableListEnd {
     type Next = VariableListEnd;
     type Variable = ();
-    const VALUE: VariableListValue<<Self::Variable as ConstVariable>::Value> =
-        VariableListValue::End;
+    const TYPE: VariableListType = VariableListType::End;
+    const VALUE: <Self::Variable as ConstVariable>::Value = panic!("");
 }
 
 impl<Var, Value, Next> VariableList for VariableListHas<Var, Value, Next>
@@ -55,7 +56,8 @@ where
 {
     type Next = Next;
     type Variable = Var;
-    const VALUE: VariableListValue<Var::Value> = VariableListValue::Has(Value::VALUE);
+    const TYPE: VariableListType = VariableListType::Has;
+    const VALUE: Var::Value = Value::VALUE;
 }
 
 impl<Var, Next> VariableList for VariableListRemoved<Var, Next>
@@ -65,7 +67,8 @@ where
 {
     type Next = Next;
     type Variable = Var;
-    const VALUE: VariableListValue<Var::Value> = VariableListValue::Removed;
+    const TYPE: VariableListType = VariableListType::Removed;
+    const VALUE: Var::Value = panic!();
 }
 
 const fn error_not_found<Key>() -> &'static str {
@@ -91,16 +94,14 @@ where
     List: VariableList,
     Var: ConstVariable,
 {
-    match List::VALUE {
-        VariableListValue::End => panic!("{}", error_not_found::<Var::Key>()),
-        VariableListValue::Removed
+    match List::TYPE {
+        VariableListType::End => panic!("{}", error_not_found::<Var::Key>()),
+        VariableListType::Removed
             if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
         {
             panic!("{}", error_not_found::<Var::Key>())
         }
-        VariableListValue::Has(value)
-            if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
-        {
+        VariableListType::Has if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() => {
             assert!(
                 type_eq::<Var::Value, <List::Variable as ConstVariable>::Value>(),
                 "{}",
@@ -108,6 +109,7 @@ where
             );
 
             unsafe {
+                let value = List::VALUE;
                 let ret = core::mem::transmute_copy(&value);
                 core::mem::forget(value);
                 ret
@@ -123,16 +125,14 @@ where
     List: VariableList,
     Var: ConstVariable,
 {
-    match List::VALUE {
-        VariableListValue::End => false,
-        VariableListValue::Removed
+    match List::TYPE {
+        VariableListType::End => false,
+        VariableListType::Removed
             if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
         {
             false
         }
-        VariableListValue::Has(_)
-            if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
-        {
+        VariableListType::Has if type_eq::<Var::Key, <List::Variable as ConstVariable>::Key>() => {
             assert!(
                 type_eq::<Var::Value, <List::Variable as ConstVariable>::Value>(),
                 "{}",

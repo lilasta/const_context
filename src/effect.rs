@@ -1,5 +1,5 @@
 use core::marker::{Destruct, PhantomData, Tuple};
-use core::mem::MaybeUninit;
+//use core::mem::MaybeUninit;
 
 use crate::utils::type_eq;
 
@@ -32,8 +32,10 @@ pub struct EffectListHas<Eff, EffConcrete, Next>(PhantomData<(Eff, EffConcrete, 
 
 pub trait EffectList {
     type Effect: Effect;
-    type EffectConcrete: ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>
-        + ~const Destruct;
+    // TODO: Effect is not available until `Fn` is marked as `#[const_trait]` again
+    //type EffectConcrete: ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>
+    //    + ~const Destruct;
+    type EffectConcrete: ~const Destruct;
 
     type Next: EffectList;
     const IS_END: bool;
@@ -72,6 +74,8 @@ where
             && type_eq::<Eff::Args, <List::Effect as Effect>::Args>()
             && type_eq::<Eff::Output, <List::Effect as Effect>::Output>()
     } {
+        // TODO: Effect is not available until `Fn` is marked as `#[const_trait]` again
+        /*
         unsafe {
             #[allow(invalid_value)]
             let func = MaybeUninit::<List::EffectConcrete>::uninit().assume_init();
@@ -86,6 +90,8 @@ where
 
             return ret_copied;
         };
+        */
+        panic!("Effect is not available until `Fn` is marked as `#[const_trait]` again")
     } else {
         call::<List::Next, Eff>(args)
     }
