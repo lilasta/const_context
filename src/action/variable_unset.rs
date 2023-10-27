@@ -1,24 +1,23 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::variable::{ConstVariable, VariableListRemoved};
+use crate::variable::{Variable, VariableListRemoved};
 
-pub struct UnsetAction<Variable>(PhantomData<Variable>);
+pub struct UnsetAction<Var>(PhantomData<Var>);
 
-impl<Variable> UnsetAction<Variable> {
+impl<Var> UnsetAction<Var> {
     #[inline(always)]
     pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<Variable> Action for UnsetAction<Variable>
+impl<Var> Action for UnsetAction<Var>
 where
-    Variable: ConstVariable,
+    Var: Variable,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> =
-        (Ctx::Effects, VariableListRemoved<Variable, Ctx::Variables>);
+    type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListRemoved<Var, Ctx::Variables>);
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {}

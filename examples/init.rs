@@ -1,6 +1,6 @@
 use const_context::action::Action;
 use const_context::ctx;
-use const_context::variable::ConstVariable;
+use const_context::variable::Variable;
 
 mod need_init {
 
@@ -25,7 +25,7 @@ mod need_init {
         }
     }
 
-    impl ConstVariable for Functions {
+    impl Variable for Functions {
         type Key = Self;
         type Value = Self;
     }

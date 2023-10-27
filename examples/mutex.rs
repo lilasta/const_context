@@ -2,14 +2,14 @@ use core::ops::{Deref, DerefMut};
 use std::sync::{LockResult, Mutex, MutexGuard, PoisonError};
 
 use const_context::action::Action;
-use const_context::variable::ConstVariable;
+use const_context::variable::Variable;
 use const_context::{ctx, ctx_if};
 
 pub type Id = usize;
 
 pub struct Locked<const ID: Id>;
 
-impl<const ID: Id> ConstVariable for Locked<ID> {
+impl<const ID: Id> Variable for Locked<ID> {
     type Key = Self;
     type Value = ();
 }

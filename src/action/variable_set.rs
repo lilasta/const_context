@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
 use crate::value::ConstValue;
-use crate::variable::{ConstVariable, VariableListHas};
+use crate::variable::{Variable, VariableListHas};
 
 pub struct SetAction<Var, Value>(PhantomData<(Var, Value)>);
 
@@ -15,7 +15,7 @@ impl<Var, Value> SetAction<Var, Value> {
 
 impl<Var, Value> Action for SetAction<Var, Value>
 where
-    Var: ConstVariable,
+    Var: Variable,
     Value: ConstValue<Type = Var::Value>,
 {
     type Output = ();

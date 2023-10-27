@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::variable::{is_variable_in, ConstVariable, VariableList};
+use crate::variable::{is_variable_in, Variable, VariableList};
 
 pub struct True;
 pub struct False;
@@ -126,15 +126,15 @@ where
     }
 }
 
-pub struct IsSet<Var: ConstVariable>(PhantomData<Var>);
+pub struct IsSet<Var: Variable>(PhantomData<Var>);
 
-impl<Var: ConstVariable> IntoBoolFromVariableList for IsSet<Var> {
+impl<Var: Variable> IntoBoolFromVariableList for IsSet<Var> {
     type From<Vars: VariableList> = IsSetBool<Var, Vars>;
 }
 
-pub struct IsSetBool<Var: ConstVariable, Vars: VariableList>(PhantomData<(Var, Vars)>);
+pub struct IsSetBool<Var: Variable, Vars: VariableList>(PhantomData<(Var, Vars)>);
 
-impl<Var: ConstVariable, Vars: VariableList> IntoBool for IsSetBool<Var, Vars> {
+impl<Var: Variable, Vars: VariableList> IntoBool for IsSetBool<Var, Vars> {
     const BOOL: bool = is_variable_in::<Vars, Var>();
 }
 
@@ -170,8 +170,8 @@ macro_rules! ctx_if_construct {
             const BOOL: bool = {
                 $(let $id = $crate::variable::find_variable::<
                     Vars,
-                    <$var as $crate::variable::ConstVariable>::Key,
-                    <$var as $crate::variable::ConstVariable>::Value>();)*
+                    <$var as $crate::variable::Variable>::Key,
+                    <$var as $crate::variable::Variable>::Value>();)*
                 $cond
             };
         }

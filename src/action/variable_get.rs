@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::variable::{find_variable, ConstVariable};
+use crate::variable::{find_variable, Variable};
 
-pub struct GetAction<Variable>(PhantomData<Variable>);
+pub struct GetAction<Var>(PhantomData<Var>);
 
 impl<Variable> GetAction<Variable> {
     #[inline(always)]
@@ -12,15 +12,15 @@ impl<Variable> GetAction<Variable> {
     }
 }
 
-impl<Variable> Action for GetAction<Variable>
+impl<Var> Action for GetAction<Var>
 where
-    Variable: ConstVariable,
+    Var: Variable,
 {
-    type Output = Variable::Value;
+    type Output = Var::Value;
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {
-        const { find_variable::<Ctx::Variables, Variable>() }
+        const { find_variable::<Ctx::Variables, Var>() }
     }
 }

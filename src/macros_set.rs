@@ -657,9 +657,9 @@ macro_rules! ctx_set {
             $($generic_bound)*
         {
             type Next = Ctx::Variables;
-            type Variable = $dst;
+            type Var = $dst;
             const TYPE: $crate::variable::VariableListType = $crate::variable::VariableListType::Has;
-            const VALUE: <$dst as $crate::variable::ConstVariable>::Value = {
+            const VALUE: <$dst as $crate::variable::Variable>::Value = {
                 $(let $bind = $crate::variable::find_variable::<Ctx::Variables, $from>();)*
                 $(let $bind_eff = $crate::effect::get_const::<Ctx::Effects, $eff>();)*
                 $expr

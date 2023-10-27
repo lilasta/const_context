@@ -140,7 +140,7 @@ macro_rules! ctx_action {
 
         #[doc(hidden)]
         impl $crate::value::ConstValue for __ConstValue {
-            type Type = <$var as $crate::variable::ConstVariable>::Value;
+            type Type = <$var as $crate::variable::Variable>::Value;
             const VALUE: Self::Type = $e;
         }
 

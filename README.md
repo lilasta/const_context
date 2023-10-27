@@ -72,7 +72,7 @@ fn where_set<const OUTER_VAL: usize, OuterT: 'static>() -> impl Action {
 
 ## Registration of variables and effects
 
-This library treats types as these names. In variables, it must implement `ConstVariable` trait, in effects, it must implement `Effect` trait. But tuples implement them, so you don't have to write the implementation manually.
+This library treats types as these names. In variables, it must implement `Variable` trait, in effects, it must implement `Effect` trait. But tuples implement them, so you don't have to write the implementation manually.
 
 ```rust
 struct Name1;

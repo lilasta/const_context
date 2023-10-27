@@ -3,12 +3,12 @@ use core::marker::{Destruct, PhantomData};
 use crate::utils::{is_same_type, str_concat_ct};
 use crate::value::ConstValue;
 
-pub trait ConstVariable {
+pub trait Variable {
     type Key: 'static;
     type Value: 'static + ~const Destruct;
 }
 
-impl<K, V> ConstVariable for (K, V)
+impl<K, V> Variable for (K, V)
 where
     K: 'static,
     V: 'static,
@@ -31,37 +31,37 @@ pub enum VariableListType {
 
 pub trait VariableList {
     type Next: VariableList;
-    type Variable: ConstVariable;
+    type Var: Variable;
     const TYPE: VariableListType;
-    const VALUE: <Self::Variable as ConstVariable>::Value;
+    const VALUE: <Self::Var as Variable>::Value;
 }
 
 impl VariableList for VariableListEnd {
     type Next = VariableListEnd;
-    type Variable = (!, !);
+    type Var = (!, !);
     const TYPE: VariableListType = VariableListType::End;
-    const VALUE: <Self::Variable as ConstVariable>::Value = unreachable!();
+    const VALUE: <Self::Var as Variable>::Value = unreachable!();
 }
 
 impl<Var, Value, Next> VariableList for VariableListHas<Var, Value, Next>
 where
-    Var: ConstVariable,
+    Var: Variable,
     Value: ConstValue<Type = Var::Value>,
     Next: VariableList,
 {
     type Next = Next;
-    type Variable = Var;
+    type Var = Var;
     const TYPE: VariableListType = VariableListType::Has;
     const VALUE: Var::Value = Value::VALUE;
 }
 
 impl<Var, Next> VariableList for VariableListRemoved<Var, Next>
 where
-    Var: ConstVariable,
+    Var: Variable,
     Next: VariableList,
 {
     type Next = Next;
-    type Variable = Var;
+    type Var = Var;
     const TYPE: VariableListType = VariableListType::Removed;
     const VALUE: Var::Value = unreachable!();
 }
@@ -87,22 +87,18 @@ const fn error_unexpected_type<Expected, Value>() -> &'static str {
 pub const fn find_variable<List, Var>() -> Var::Value
 where
     List: VariableList,
-    Var: ConstVariable,
+    Var: Variable,
 {
     match List::TYPE {
         VariableListType::End => panic!("{}", error_not_found::<Var::Key>()),
-        VariableListType::Removed
-            if is_same_type::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
-        {
+        VariableListType::Removed if is_same_type::<Var::Key, <List::Var as Variable>::Key>() => {
             panic!("{}", error_not_found::<Var::Key>())
         }
-        VariableListType::Has
-            if is_same_type::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
-        {
+        VariableListType::Has if is_same_type::<Var::Key, <List::Var as Variable>::Key>() => {
             assert!(
-                is_same_type::<Var::Value, <List::Variable as ConstVariable>::Value>(),
+                is_same_type::<Var::Value, <List::Var as Variable>::Value>(),
                 "{}",
-                error_unexpected_type::<Var::Value, <List::Variable as ConstVariable>::Value>()
+                error_unexpected_type::<Var::Value, <List::Var as Variable>::Value>()
             );
 
             unsafe {
@@ -120,22 +116,18 @@ where
 pub const fn is_variable_in<List, Var>() -> bool
 where
     List: VariableList,
-    Var: ConstVariable,
+    Var: Variable,
 {
     match List::TYPE {
         VariableListType::End => false,
-        VariableListType::Removed
-            if is_same_type::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
-        {
+        VariableListType::Removed if is_same_type::<Var::Key, <List::Var as Variable>::Key>() => {
             false
         }
-        VariableListType::Has
-            if is_same_type::<Var::Key, <List::Variable as ConstVariable>::Key>() =>
-        {
+        VariableListType::Has if is_same_type::<Var::Key, <List::Var as Variable>::Key>() => {
             assert!(
-                is_same_type::<Var::Value, <List::Variable as ConstVariable>::Value>(),
+                is_same_type::<Var::Value, <List::Var as Variable>::Value>(),
                 "{}",
-                error_unexpected_type::<Var::Value, <List::Variable as ConstVariable>::Value>()
+                error_unexpected_type::<Var::Value, <List::Var as Variable>::Value>()
             );
             true
         }
