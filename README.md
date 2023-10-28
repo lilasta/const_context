@@ -71,6 +71,12 @@ fn where_set<const OUTER_VAL: usize, OuterT: 'static>() -> impl Action {
 }
 ```
 
+Other things to know:
+
+- Shadowing is not allowed.
+- Continuation is not currently supported.
+    - You can't use the effect feature to define `resume` or `return`.
+
 ## Registration of variables and effects
 
 This library treats types as these names. In variables, it must implement `Variable` trait, in effects, it must implement `Effect` trait. But tuples implement them, so you don't have to write the implementation manually.
