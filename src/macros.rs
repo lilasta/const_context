@@ -9,6 +9,7 @@ macro_rules! ctx {
     }
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! ctx_parse {
     {
@@ -221,6 +222,7 @@ macro_rules! ctx_parse {
     }
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! ctx_action {
     () => {
@@ -275,6 +277,7 @@ macro_rules! ctx_action {
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! ctx_rtc_pack {
     ($($name:ident)*) => {{
@@ -290,6 +293,7 @@ macro_rules! ctx_rtc_pack {
     }};
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! ctx_rtc_unpack {
     ($ctx:ident, ) => {};
