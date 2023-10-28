@@ -12,6 +12,17 @@ macro_rules! ctx_set {
         }
     };
     {
+        state = parse_dst
+        rest = [ $name:ty : $type:ty = $($rest:tt)* ]
+    } => {
+        $crate::ctx_set! {
+            state = parse_expr
+            dst = [ ($name, $type) ]
+            expr = []
+            rest = [ $($rest)* ]
+        }
+    };
+    {
         state = parse_expr
         dst = [ $($dst:tt)* ]
         expr = [ $($expr:tt)* ]
