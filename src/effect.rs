@@ -118,6 +118,7 @@ where
 pub struct RuntimeEffect<Eff: Effect>(fn(Eff::Args) -> Eff::Output);
 
 impl<Eff: Effect> Clone for RuntimeEffect<Eff> {
+    #[inline(always)]
     fn clone(&self) -> Self {
         Self(self.0)
     }
@@ -151,6 +152,7 @@ impl<Eff: Effect> Fn<Eff::Args> for RuntimeEffect<Eff> {
 pub struct ConstEffect<List: EffectList, Eff: Effect>(PhantomData<(List, Eff)>);
 
 impl<List: EffectList, Eff: Effect> Clone for ConstEffect<List, Eff> {
+    #[inline(always)]
     fn clone(&self) -> Self {
         Self(self.0)
     }

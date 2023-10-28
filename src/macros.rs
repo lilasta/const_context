@@ -1,11 +1,14 @@
 #[macro_export]
 macro_rules! ctx {
     { $($rest:tt)* } => {
-        $crate::action::lazy::LazyAction::new(move || $crate::ctx_parse! {
-            action = ()
-            binds = ()
-            rest = ($($rest)*)
-        })
+        $crate::action::lazy::LazyAction::new(
+            #[inline(always)]
+            move || $crate::ctx_parse! {
+                action = ()
+                binds = ()
+                rest = ($($rest)*)
+            }
+        )
     }
 }
 
@@ -41,6 +44,7 @@ macro_rules! ctx_parse {
                 $crate::ctx_rtc_pack!($($binds)*)
             },
             #[allow(unused_variables)]
+            #[inline(always)]
             move |_, __rt_ctx| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
@@ -60,6 +64,7 @@ macro_rules! ctx_parse {
             $crate::ctx_action!($($action)*),
             $crate::ctx_rtc_pack!($($binds)*),
             #[allow(unused_variables)]
+            #[inline(always)]
             move |_, __rt_ctx| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
@@ -85,6 +90,7 @@ macro_rules! ctx_parse {
                 $crate::ctx_rtc_pack!($($binds)*)
             },
             #[allow(unused_variables)]
+            #[inline(always)]
             move |$var, __rt_ctx| {
                 let __tmp = $var;
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
@@ -106,6 +112,7 @@ macro_rules! ctx_parse {
             $crate::ctx_action!($($action)*),
             $crate::ctx_rtc_pack!($($binds)*),
             #[allow(unused_variables)]
+            #[inline(always)]
             move |$var, __rt_ctx| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
@@ -125,6 +132,7 @@ macro_rules! ctx_parse {
             $crate::action::pure::PureAction::new($($e)*),
             $crate::ctx_rtc_pack!($($binds)*),
             #[allow(unused_variables)]
+            #[inline(always)]
             move |_ $(: $ty)?, __rt_ctx| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
@@ -144,6 +152,7 @@ macro_rules! ctx_parse {
             $crate::action::pure::PureAction::new($($e)*),
             $crate::ctx_rtc_pack!($($binds)*),
             #[allow(unused_variables)]
+            #[inline(always)]
             move |$var $(: $ty)?, __rt_ctx| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
@@ -199,6 +208,7 @@ macro_rules! ctx_parse {
             $crate::ctx_action!($($action)*),
             $crate::ctx_rtc_pack!($($binds)*),
             #[allow(unused_variables)]
+            #[inline(always)]
             move |_, __rt_ctx| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
