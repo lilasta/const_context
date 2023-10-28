@@ -12,5 +12,5 @@ default = []
 conditional = []
 
 [[example]]
-name = "mutex"
+name = "lock"
 required-features = ["conditional"]

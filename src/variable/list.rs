@@ -63,11 +63,6 @@ where
 /// This struct removes the variable value from `List``.
 pub struct VariableListRemove<Var, List>(PhantomData<(Var, List)>);
 
-/// Dummy type to express variable name and variable type for VariableListRemove.
-/// This type must not be used by the user.
-#[doc(hidden)]
-pub struct __VariableListRemove;
-
 impl<Var, List> VariableList for VariableListRemove<Var, List>
 where
     Var: Variable,
@@ -75,8 +70,8 @@ where
 {
     const KIND: VariableListKind = VariableListKind::Remove;
 
-    type Var = (__VariableListRemove, __VariableListRemove);
-    const VALUE: __VariableListRemove = unreachable!();
+    type Var = Var;
+    const VALUE: Var::Type = unreachable!();
 
     type Rest = List;
 }
