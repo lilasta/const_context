@@ -19,6 +19,12 @@ pub trait Variable {
     type Type: 'static;
 }
 
+/// `_: ()` is expressed as `()`.
+impl Variable for () {
+    type Name = ();
+    type Type = ();
+}
+
 /// `name: type` is expressed as `(Name, Type)`.
 impl<Name, Type> Variable for (Name, Type)
 where

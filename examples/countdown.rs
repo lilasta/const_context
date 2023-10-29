@@ -9,42 +9,53 @@ enum Countdown {
     Go,
 }
 
+impl Countdown {
+    const fn countdown(&self) -> Self {
+        match self {
+            Self::Three => Self::Two,
+            Self::Two => Self::One,
+            Self::One => Self::Go,
+            Self::Go => panic!("Already started!"),
+        }
+    }
+}
+
 type Count = (Countdown, Countdown);
 
 fn three() -> impl Action {
     ctx! {
-        let _ = println!("three.");
         set Count = Countdown::Three;
+        let _ = println!("three.");
     }
 }
 
 fn two() -> impl Action {
     ctx! {
+        set Count = {
+            assert!(matches!(count, Countdown::Three));
+            count.countdown()
+        } where count <- get Count;
         let _ = println!("two.");
-        set Count = match a {
-            Countdown::Three => Countdown::Two,
-            _ => panic!(),
-        } where a <- get Count;
     }
 }
 
 fn one() -> impl Action {
     ctx! {
+        set Count = {
+            assert!(matches!(count, Countdown::Two));
+            count.countdown()
+        } where count <- get Count;
         let _ = println!("one.");
-        set Count = match a {
-            Countdown::Two => Countdown::One,
-            _ => panic!(),
-        } where a <- get Count;
     }
 }
 
 fn go() -> impl Action {
     ctx! {
+        set Count = {
+            assert!(matches!(count, Countdown::One));
+            count.countdown()
+        } where count <- get Count;
         let _ = println!("go!");
-        set Count = match a {
-            Countdown::One => Countdown::Go,
-            _ => panic!(),
-        } where a <- get Count;
     }
 }
 

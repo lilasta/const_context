@@ -18,3 +18,9 @@ pub trait ConstValue {
     /// Constant value.
     const VALUE: Self::Type;
 }
+
+/// Evaluate the constant value at compile-time.
+#[inline(always)]
+pub const fn strict<V: ConstValue>() {
+    const { core::mem::forget(V::VALUE) }
+}

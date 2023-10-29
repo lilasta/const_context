@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::value::ConstValue;
+use crate::value::{strict, ConstValue};
 use crate::variable::list::VariableListCons;
 use crate::variable::Variable;
 
@@ -24,5 +24,8 @@ where
     type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListCons<Var, Value, Ctx::Variables>);
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {}
+    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+        // TODO: Add a strictness option?
+        strict::<Value>();
+    }
 }

@@ -655,22 +655,19 @@ macro_rules! ctx_set {
             (::core::marker::PhantomData<($($generic_name,)*)>);
 
         #[doc(hidden)]
-        #[allow(unused_parens)]
-        struct __CustomVariableList
+        struct __CustomConstValue
             <Ctx: $crate::action::ActionContext, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
             (::core::marker::PhantomData<(Ctx, $($generic_name,)*)>);
 
         #[doc(hidden)]
-        impl<Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::variable::list::VariableList
-        for __CustomVariableList<Ctx, $($generic_name,)* $($generic_const,)*>
+        impl<Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::value::ConstValue
+        for __CustomConstValue<Ctx, $($generic_name,)* $($generic_const,)*>
         where
             Ctx: $crate::action::ActionContext,
             $($generic_bound)*
         {
-            type Rest = Ctx::Variables;
-            type Var = $dst;
-            const KIND: $crate::variable::list::VariableListKind = $crate::variable::list::VariableListKind::Cons;
-            const VALUE: <$dst as $crate::variable::Variable>::Type = {
+            type Type = <$dst as $crate::variable::Variable>::Type;
+            const VALUE: Self::Type = {
                 $(let $bind = $crate::variable::list::find_variable::<Ctx::Variables, $from>();)*
                 $(let $bind_eff = $crate::effect::get_const::<Ctx::Effects, $eff>();)*
                 $expr
@@ -684,10 +681,16 @@ macro_rules! ctx_set {
             $($generic_bound)*
         {
             type Output = ();
-            type Context<Ctx: $crate::action::ActionContext> = (Ctx::Effects, __CustomVariableList<Ctx, $($generic_name,)* $($generic_const,)*>);
+            type Context<Ctx: $crate::action::ActionContext> = (
+                Ctx::Effects,
+                $crate::variable::list::VariableListCons<$dst, __CustomConstValue<Ctx, $($generic_name,)* $($generic_const,)*>, Ctx::Variables>
+            );
 
             #[inline(always)]
-            fn eval<Ctx: $crate::action::ActionContext>(self) -> Self::Output {}
+            fn eval<Ctx: $crate::action::ActionContext>(self) -> Self::Output {
+                // TODO: Add a strictness option?
+                $crate::value::strict::<__CustomConstValue<Ctx, $($generic_name,)* $($generic_const,)*>>();
+            }
         }
 
         __CustomSetAction::<$($generic_param,)* $({ $generic_const_param },)*>(::core::marker::PhantomData)
