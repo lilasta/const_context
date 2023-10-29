@@ -17,7 +17,7 @@ const_context = { git = "https://github.com/lilasta/const_context" }
 
 ## `ctx!` macro
 
-A macro for creating actions. All actions can be evaluated by calling `Action::start_eval`.
+A macro for creating actions. All actions can be evaluated by calling `Action::run`.
 
 ```rust
 use const_context::action::Action;
@@ -26,7 +26,7 @@ let action = ctx! {
     pure 42
 };
 
-assert_eq!(action.start_eval(), 42);
+assert_eq!(action.run(), 42);
 ```
 
 The basic syntax is shown below:
