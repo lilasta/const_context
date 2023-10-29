@@ -21,7 +21,9 @@ where
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {
-        const { panic!("{}", Msg::MSG) }
+        const {
+            panic!("{}", Msg::MSG);
+        }
     }
 }
 
