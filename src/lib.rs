@@ -2,7 +2,6 @@
 #![cfg_attr(feature = "conditional", feature(associated_const_equality))]
 #![cfg_attr(feature = "conditional", feature(specialization))]
 #![feature(const_heap)]
-#![feature(const_mut_refs)]
 #![feature(const_refs_to_cell)]
 #![feature(const_trait_impl)]
 #![feature(const_type_id)]
