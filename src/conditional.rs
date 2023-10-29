@@ -1,52 +1,41 @@
+pub mod bool;
+
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
+use crate::conditional::bool::{ConstBool, ConstBoolToTypeBool, False, True, TypeBool};
 use crate::variable::list::{is_variable_in, VariableList};
 use crate::variable::Variable;
 
-pub struct True;
-pub struct False;
-
-pub trait TypeBool {}
-impl TypeBool for True {}
-impl TypeBool for False {}
-
-pub trait IntoBool {
-    const BOOL: bool;
+pub trait Condition {
+    type Bool<Ctx: ActionContext>: TypeBool;
 }
 
-pub trait IntoBoolFromVariableList {
-    type From<Vars: VariableList>: IntoBool;
+pub struct IsVariableIn<Var: Variable>(PhantomData<Var>);
+
+impl<Var: Variable> Condition for IsVariableIn<Var> {
+    type Bool<Ctx: ActionContext> =
+        <ValueOfIsVariableIn<Var, Ctx::Variables> as ConstBoolToTypeBool>::Type;
 }
 
-pub trait IntoTypeBool {
-    type Into: TypeBool;
+pub struct ValueOfIsVariableIn<Var: Variable, Vars: VariableList>(PhantomData<(Var, Vars)>);
+
+impl<Var: Variable, Vars: VariableList> ConstBool for ValueOfIsVariableIn<Var, Vars> {
+    const BOOL: bool = is_variable_in::<Vars, Var>();
 }
 
-impl<T: IntoBool> IntoTypeBool for T {
-    default type Into = False;
-}
-
-impl<T: IntoBool<BOOL = true>> IntoTypeBool for T {
-    type Into = True;
-}
-
-pub trait Select<Output> {
+pub trait If<Output> {
     type Action: Action<Output = Output>;
-    fn selected(self) -> Self::Action;
+    fn then(self) -> Self::Action;
 }
 
-pub struct SelectAction<A, B, Cond, Output>(A, B, PhantomData<(Cond, Output)>)
-where
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
-    Cond: TypeBool;
+pub struct ConcreteIf<Cond, A, B>(A, B, PhantomData<Cond>);
 
-impl<A, B, Cond, Output> SelectAction<A, B, Cond, Output>
+impl<Cond, A, B, Output> ConcreteIf<Cond, A, B>
 where
+    Cond: TypeBool,
     A: Action<Output = Output>,
     B: Action<Output = Output>,
-    Cond: TypeBool,
 {
     #[inline(always)]
     pub const fn new(a: A, b: B) -> Self {
@@ -54,19 +43,19 @@ where
     }
 }
 
-impl<A, B, Cond, Output> Select<Output> for SelectAction<A, B, Cond, Output>
+impl<Cond, A, B, Output> If<Output> for ConcreteIf<Cond, A, B>
 where
     A: Action<Output = Output>,
     B: Action<Output = Output>,
     Cond: TypeBool,
 {
     default type Action = B;
-    default fn selected(self) -> Self::Action {
+    default fn then(self) -> Self::Action {
         unreachable!()
     }
 }
 
-impl<A, B, Output> Select<Output> for SelectAction<A, B, False, Output>
+impl<A, B, Output> If<Output> for ConcreteIf<False, A, B>
 where
     A: Action<Output = Output>,
     B: Action<Output = Output>,
@@ -74,12 +63,12 @@ where
     type Action = B;
 
     #[inline(always)]
-    fn selected(self) -> Self::Action {
+    fn then(self) -> Self::Action {
         self.1
     }
 }
 
-impl<A, B, Output> Select<Output> for SelectAction<A, B, True, Output>
+impl<A, B, Output> If<Output> for ConcreteIf<True, A, B>
 where
     A: Action<Output = Output>,
     B: Action<Output = Output>,
@@ -87,17 +76,18 @@ where
     type Action = A;
 
     #[inline(always)]
-    fn selected(self) -> Self::Action {
+    fn then(self) -> Self::Action {
         self.0
     }
 }
 
-pub struct IfAction<A, B, Cond, Output>(A, B, PhantomData<(Cond, Output)>);
+pub struct IfAction<Cond, A, B>(A, B, PhantomData<Cond>);
 
-impl<A, B, Cond: IntoBoolFromVariableList, Output> IfAction<A, B, Cond, Output>
+impl<Cond, A, B> IfAction<Cond, A, B>
 where
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
+    Cond: Condition,
+    A: Action,
+    B: Action<Output = A::Output>,
 {
     #[inline(always)]
     pub const fn new(a: A, b: B) -> Self {
@@ -105,38 +95,23 @@ where
     }
 }
 
-impl<A, B, Cond: IntoBoolFromVariableList, Output> Action for IfAction<A, B, Cond, Output>
+impl<Cond, A, B> Action for IfAction<Cond, A, B>
 where
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
+    Cond: Condition,
+    A: Action,
+    B: Action<Output = A::Output>,
 {
-    type Output = Output;
-    type Context<Ctx: ActionContext> = <<SelectAction<
-        A,
-        B,
-        <Cond::From<Ctx::Variables> as IntoTypeBool>::Into,
-        Output,
-    > as Select<Output>>::Action as Action>::Context<Ctx>;
+    type Output = A::Output;
+    type Context<Ctx: ActionContext> =
+        <<ConcreteIf<Cond::Bool<Ctx>, A, B> as If<A::Output>>::Action as Action>::Context<Ctx>;
 
     #[inline(always)]
     fn eval<Ctx: ActionContext>(self) -> Self::Output {
         let Self(a, b, ..) = self;
-        SelectAction::<A, B, <Cond::From<Ctx::Variables> as IntoTypeBool>::Into, Output>::new(a, b)
-            .selected()
+        ConcreteIf::<Cond::Bool<Ctx>, A, B>::new(a, b)
+            .then()
             .eval::<Ctx>()
     }
-}
-
-pub struct IsSet<Var: Variable>(PhantomData<Var>);
-
-impl<Var: Variable> IntoBoolFromVariableList for IsSet<Var> {
-    type From<Vars: VariableList> = IsSetBool<Var, Vars>;
-}
-
-pub struct IsSetBool<Var: Variable, Vars: VariableList>(PhantomData<(Var, Vars)>);
-
-impl<Var: Variable, Vars: VariableList> IntoBool for IsSetBool<Var, Vars> {
-    const BOOL: bool = is_variable_in::<Vars, Var>();
 }
 
 #[macro_export]
@@ -147,11 +122,11 @@ macro_rules! ctx_if_construct {
         then = ($then:expr)
         else = ($else:expr)
     }=> {
-        $crate::conditional::IfAction::<_, _, $crate::conditional::IsSet::<$var>, _>::new($then, $else)
+        $crate::conditional::IfAction::<$crate::conditional::IsVariableIn::<$var>, _, _>::new($then, $else)
     };
     {
         predicate = ( $cond:expr )
-        where = ($($id:ident = $var:ty),*)
+        where = ($($bind:ident = $var:ty),*)
         then = ($then:expr)
         else = ($else:expr)
     } => {{
@@ -159,22 +134,22 @@ macro_rules! ctx_if_construct {
         struct __Condition;
 
         #[doc(hidden)]
-        impl $crate::conditional::IntoBoolFromVariableList for __Condition {
-            type From<Vars: $crate::variable::list::VariableList> = __ConditionBool<Vars>;
+        impl $crate::conditional::Condition for __Condition {
+            type Bool<Ctx: $crate::action::ActionContext> = <__ConditionBool<Ctx> as $crate::conditional::bool::ConstBoolToTypeBool>::Type;
         }
 
         #[doc(hidden)]
-        struct __ConditionBool<Vars: $crate::variable::list::VariableList>(::core::marker::PhantomData<Vars>);
+        struct __ConditionBool<Ctx: $crate::action::ActionContext>(::core::marker::PhantomData<Ctx>);
 
         #[doc(hidden)]
-        impl<Vars: $crate::variable::list::VariableList> $crate::conditional::IntoBool for __ConditionBool<Vars> {
+        impl<Ctx: $crate::action::ActionContext> $crate::conditional::ConstBool for __ConditionBool<Ctx> {
             const BOOL: bool = {
-                $(let $id = $crate::variable::list::find_variable::<Vars, $var>();)*
+                $(let $bind = $crate::variable::list::find_variable::<Ctx::Variables, $var>();)*
                 $cond
             };
         }
 
-        $crate::conditional::IfAction::<_, _, __Condition, _>::new($then, $else)
+        $crate::conditional::IfAction::<__Condition, _, _>::new($then, $else)
     }}
 }
 
