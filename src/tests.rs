@@ -39,15 +39,15 @@ fn test() {
         pure (v + w)
     };
 
-    assert_eq!(action.start_eval(), 90);
-    assert_eq!(action2.start_eval(), 42);
-    assert_eq!(action3.start_eval(), 132);
+    assert_eq!(action.run(), 90);
+    assert_eq!(action2.run(), 42);
+    assert_eq!(action3.run(), 132);
 
     let action = ctx! {
         f(42)
     };
 
-    assert_eq!(action.start_eval(), 42);
+    assert_eq!(action.run(), 42);
 
     let action = ctx! {
         set Var = 90;
@@ -59,7 +59,7 @@ fn test() {
         get Var
     };
 
-    assert_eq!(action2.start_eval(), 90);
+    assert_eq!(action2.run(), 90);
 
     let action = ctx! {
         let a = 0;
@@ -68,7 +68,7 @@ fn test() {
         unset Temp;
     };
 
-    assert_eq!(action.start_eval(), ());
+    assert_eq!(action.run(), ());
 
     type Generic<T> = (T, u64);
     let action = ctx! {
@@ -83,7 +83,7 @@ fn test() {
         unset Temp;
     };
 
-    assert_eq!(action.start_eval(), ());
+    assert_eq!(action.run(), ());
 
     /*
     const fn id_u64(n: u64) -> u64 {
@@ -126,5 +126,5 @@ fn test() {
         let _ = println!("{:?}", b);
     };
 
-    assert_eq!(action.start_eval(), ());
+    assert_eq!(action.run(), ());
 }

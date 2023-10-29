@@ -25,5 +25,5 @@ where
     );
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {}
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {}
 }

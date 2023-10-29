@@ -83,7 +83,7 @@ fn main() {
         lock.modify(|v| println!("{}", *v));
         lock.unlock();
     };
-    action.start_eval();
+    action.run();
 
     let action = ctx! {
         let rclock = RcLock::<1, _>::new(1);
@@ -93,5 +93,5 @@ fn main() {
         rclock.modify(|v| println!("{}", *v));
         rclock.unlock();
     };
-    action.start_eval();
+    action.run();
 }

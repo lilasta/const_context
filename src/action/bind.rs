@@ -35,9 +35,9 @@ where
     type Context<Ctx: ActionContext> = NextAction::Context<PreviousAction::Context<Ctx>>;
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         let Self(rt_ctx, action, constructor) = self;
-        let output = action.eval::<Ctx>();
-        constructor(output, rt_ctx).eval::<PreviousAction::Context<Ctx>>()
+        let output = action.run_with::<Ctx>();
+        constructor(output, rt_ctx).run_with::<PreviousAction::Context<Ctx>>()
     }
 }

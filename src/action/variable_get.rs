@@ -22,7 +22,7 @@ where
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         const { find_variable::<Ctx::Variables, Var>() }
     }
 }

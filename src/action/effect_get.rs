@@ -21,7 +21,7 @@ where
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         crate::effect::get::<Ctx::Effects, Eff>()
     }
 }

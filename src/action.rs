@@ -31,9 +31,9 @@ pub trait Action: Sized {
     type Context<Ctx: ActionContext>: ActionContext;
 
     #[inline(always)]
-    fn start_eval(self) -> Self::Output {
-        self.eval::<InitialActionContext>()
+    fn run(self) -> Self::Output {
+        self.run_with::<InitialActionContext>()
     }
 
-    fn eval<Ctx: ActionContext>(self) -> Self::Output;
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output;
 }

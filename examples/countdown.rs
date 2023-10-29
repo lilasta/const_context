@@ -67,5 +67,5 @@ fn main() {
         go();
     };
 
-    action.start_eval();
+    action.run();
 }

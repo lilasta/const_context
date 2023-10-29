@@ -24,7 +24,7 @@ where
     type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListCons<Var, Value, Ctx::Variables>);
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         // TODO: Add a strictness option?
         strict::<Value>();
     }

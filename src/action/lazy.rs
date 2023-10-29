@@ -19,8 +19,8 @@ where
     type Context<Ctx: ActionContext> = A::Context<Ctx>;
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         let Self(closure) = self;
-        closure().eval::<Ctx>()
+        closure().run_with::<Ctx>()
     }
 }

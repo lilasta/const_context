@@ -21,5 +21,5 @@ fn main() {
         for_each(test);
     };
 
-    action.start_eval();
+    action.run();
 }

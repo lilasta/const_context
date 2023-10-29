@@ -106,11 +106,11 @@ where
         <<ConcreteIf<Cond::Bool<Ctx>, A, B> as If<A::Output>>::Action as Action>::Context<Ctx>;
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         let Self(a, b, ..) = self;
         ConcreteIf::<Cond::Bool<Ctx>, A, B>::new(a, b)
             .then()
-            .eval::<Ctx>()
+            .run_with::<Ctx>()
     }
 }
 
@@ -311,7 +311,7 @@ fn test() {
                 ctx! { pure "!=" }
         )
     };
-    assert_eq!(action.start_eval(), "==");
+    assert_eq!(action.run(), "==");
 
     let action = ctx! {
         set Var = 45;
@@ -323,7 +323,7 @@ fn test() {
         );
         get Var2
     };
-    assert_eq!(action.start_eval(), 42);
+    assert_eq!(action.run(), 42);
 
     let action = ctx! {
         set Var = 45;
@@ -335,5 +335,5 @@ fn test() {
         );
         get Var2
     };
-    assert_eq!(action.start_eval(), 42);
+    assert_eq!(action.run(), 42);
 }

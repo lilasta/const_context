@@ -17,7 +17,7 @@ fn main() {
         pure (v1 + v2 + v3)
     };
 
-    println!("{}", action.start_eval()); // 100
+    println!("{}", action.run()); // 100
 
     let action = ctx! {
         set Var1 = 6;
@@ -26,5 +26,5 @@ fn main() {
         get Var3
     };
 
-    println!("{}", action.start_eval()); // 42
+    println!("{}", action.run()); // 42
 }

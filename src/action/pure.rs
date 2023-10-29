@@ -15,7 +15,7 @@ impl<Value> Action for PureAction<Value> {
     type Context<Ctx: ActionContext> = Ctx;
 
     #[inline(always)]
-    fn eval<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         self.0
     }
 }

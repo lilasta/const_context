@@ -50,5 +50,5 @@ fn main() {
         let _ = println!("{}", funcs.foo());
     };
 
-    action.start_eval();
+    action.run();
 }
