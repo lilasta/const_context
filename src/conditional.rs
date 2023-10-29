@@ -126,7 +126,7 @@ macro_rules! ctx_if_construct {
     };
     {
         predicate = ( $cond:expr )
-        where = ($($bind:ident = $var:ty),*)
+        where = ($($bind:ident <- $var:ty),*)
         then = ($then:expr)
         else = ($else:expr)
     } => {{
@@ -305,7 +305,7 @@ fn test() {
     let action = ctx! {
         set Var = 45;
         ctx_if!(
-            if a + b == 90 where a = Var, b = Var then
+            if a + b == 90 where a <- Var, b <- Var then
                 ctx! { pure "==" }
             else
                 ctx! { pure "!=" }
@@ -316,7 +316,7 @@ fn test() {
     let action = ctx! {
         set Var = 45;
         ctx_if!(
-            if a + b == 90 where a = Var, b = Var then
+            if a + b == 90 where a <- Var, b <- Var then
                 ctx! { set Var2 = 42; }
             else
                 ctx! { }
