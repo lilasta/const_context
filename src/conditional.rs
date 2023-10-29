@@ -160,19 +160,16 @@ macro_rules! ctx_if_construct {
 
         #[doc(hidden)]
         impl $crate::conditional::IntoBoolFromVariableList for __Condition {
-            type From<Vars: $crate::variable::VariableList> = __ConditionBool<Vars>;
+            type From<Vars: $crate::variable::list::VariableList> = __ConditionBool<Vars>;
         }
 
         #[doc(hidden)]
-        struct __ConditionBool<Vars: $crate::variable::VariableList>(::core::marker::PhantomData<Vars>);
+        struct __ConditionBool<Vars: $crate::variable::list::VariableList>(::core::marker::PhantomData<Vars>);
 
         #[doc(hidden)]
-        impl<Vars: $crate::variable::VariableList> $crate::conditional::IntoBool for __ConditionBool<Vars> {
+        impl<Vars: $crate::variable::list::VariableList> $crate::conditional::IntoBool for __ConditionBool<Vars> {
             const BOOL: bool = {
-                $(let $id = $crate::variable::find_variable::<
-                    Vars,
-                    <$var as $crate::variable::Variable>::Key,
-                    <$var as $crate::variable::Variable>::Value>();)*
+                $(let $id = $crate::variable::list::find_variable::<Vars, $var>();)*
                 $cond
             };
         }
