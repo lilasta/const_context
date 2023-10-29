@@ -2,7 +2,6 @@ pub mod bind;
 pub mod effect_get;
 pub mod effect_set;
 pub mod lazy;
-pub mod panic;
 pub mod pure;
 pub mod variable_get;
 pub mod variable_set;

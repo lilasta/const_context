@@ -271,17 +271,10 @@ macro_rules! ctx_action {
     (effect $f:ty) => {
         $crate::action::effect_get::GetEffectAction::<$f>::new()
     };
-    (panic $msg:expr) => {{
-        #[doc(hidden)]
-        struct __PanicMsg;
-
-        #[doc(hidden)]
-        impl $crate::action::panic::PanicMessage for __PanicMsg {
-            const MSG: &'static str = $msg;
-        }
-
-        $crate::action::panic::PanicAction::<__PanicMsg, _>::new()
-    }};
+    (panic $msg:expr) => {
+        // This is strictly evaluated, so it will cause a compile error.
+        $crate::ctx_action!(set () = panic!($msg))
+    };
     ($action:expr) => {
         $action
     };
