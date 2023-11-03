@@ -656,20 +656,20 @@ macro_rules! ctx_set {
 
         #[doc(hidden)]
         struct __CustomConstValue
-            <Ctx: $crate::action::ActionContext, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
-            (::core::marker::PhantomData<(Ctx, $($generic_name,)*)>);
+            <__Ctx: $crate::action::ActionContext, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
+            (::core::marker::PhantomData<(__Ctx, $($generic_name,)*)>);
 
         #[doc(hidden)]
-        impl<Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::value::ConstValue
-        for __CustomConstValue<Ctx, $($generic_name,)* $($generic_const,)*>
+        impl<__Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::value::ConstValue
+        for __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>
         where
-            Ctx: $crate::action::ActionContext,
+            __Ctx: $crate::action::ActionContext,
             $($generic_bound)*
         {
             type Type = <$dst as $crate::variable::Variable>::Type;
             const VALUE: Self::Type = {
-                $(let $bind = $crate::variable::list::find_variable::<Ctx::Variables, $from>();)*
-                $(let $bind_eff = $crate::effect::get_const::<Ctx::Effects, $eff>();)*
+                $(let $bind = $crate::variable::list::find_variable::<__Ctx::Variables, $from>();)*
+                $(let $bind_eff = $crate::effect::get_const::<__Ctx::Effects, $eff>();)*
                 $expr
             };
         }
@@ -681,15 +681,15 @@ macro_rules! ctx_set {
             $($generic_bound)*
         {
             type Output = ();
-            type Context<Ctx: $crate::action::ActionContext> = (
-                Ctx::Effects,
-                $crate::variable::list::VariableListCons<$dst, __CustomConstValue<Ctx, $($generic_name,)* $($generic_const,)*>, Ctx::Variables>
+            type Context<__Ctx: $crate::action::ActionContext> = (
+                __Ctx::Effects,
+                $crate::variable::list::VariableListCons<$dst, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>, __Ctx::Variables>
             );
 
             #[inline(always)]
-            fn run_with<Ctx: $crate::action::ActionContext>(self) -> Self::Output {
+            fn run_with<__Ctx: $crate::action::ActionContext>(self) -> Self::Output {
                 // TODO: Add a strictness option?
-                $crate::value::strict::<__CustomConstValue<Ctx, $($generic_name,)* $($generic_const,)*>>();
+                $crate::value::strict::<__CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>>();
             }
         }
 
