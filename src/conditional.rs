@@ -135,16 +135,16 @@ macro_rules! ctx_if_construct {
 
         #[doc(hidden)]
         impl $crate::conditional::Condition for __Condition {
-            type Bool<Ctx: $crate::action::ActionContext> = <__ConditionBool<Ctx> as $crate::conditional::bool::ConstBoolToTypeBool>::Type;
+            type Bool<__Ctx: $crate::action::ActionContext> = <__ConditionBool<__Ctx> as $crate::conditional::bool::ConstBoolToTypeBool>::Type;
         }
 
         #[doc(hidden)]
-        struct __ConditionBool<Ctx: $crate::action::ActionContext>(::core::marker::PhantomData<Ctx>);
+        struct __ConditionBool<__Ctx: $crate::action::ActionContext>(::core::marker::PhantomData<__Ctx>);
 
         #[doc(hidden)]
-        impl<Ctx: $crate::action::ActionContext> $crate::conditional::ConstBool for __ConditionBool<Ctx> {
+        impl<__Ctx: $crate::action::ActionContext> $crate::conditional::ConstBool for __ConditionBool<__Ctx> {
             const BOOL: bool = {
-                $(let $bind = $crate::variable::list::find_variable::<Ctx::Variables, $var>();)*
+                $(let $bind = $crate::variable::list::find_variable::<__Ctx::Variables, $var>();)*
                 $cond
             };
         }
