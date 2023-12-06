@@ -689,8 +689,7 @@ macro_rules! ctx_set {
 
             #[inline(always)]
             fn run_with<__Ctx: $crate::action::ActionContext>(self) -> Self::Output {
-                // TODO: Add a strictness option?
-                $crate::value::strict::<__CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>>();
+                $crate::value::bool::strict_if::<__Ctx::Strictness, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>>();
             }
         }
 

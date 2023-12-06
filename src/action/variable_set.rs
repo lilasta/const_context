@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::value::{strict, ConstValue};
+use crate::value::bool::strict_if;
+use crate::value::ConstValue;
 use crate::variable::list::VariableListCons;
 use crate::variable::Variable;
 
@@ -29,10 +30,6 @@ where
 
     #[inline(always)]
     fn run_with<Ctx: ActionContext>(self) -> Self::Output {
-        const {
-            if <Ctx::Strictness as ConstValue>::VALUE {
-                strict::<Value>();
-            }
-        }
+        const { strict_if::<Ctx::Strictness, Value>() }
     }
 }
