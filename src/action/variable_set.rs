@@ -30,6 +30,6 @@ where
 
     #[inline(always)]
     fn run_with<Ctx: ActionContext>(self) -> Self::Output {
-        const { strict_if::<Ctx::Strictness, Value>() }
+        strict_if::<Ctx::Strictness, Value>();
     }
 }

@@ -5,8 +5,8 @@ use crate::utils::is_same_type;
 
 pub trait Effect {
     type Name: 'static;
-    type Args: 'static + Tuple + ~const Destruct;
-    type Output: 'static + ~const Destruct;
+    type Args: 'static + Tuple + Destruct;
+    type Output: 'static + Destruct;
 }
 
 impl Effect for () {
@@ -19,7 +19,7 @@ impl<Name, Args, Output> Effect for (Name, Args, Output)
 where
     Name: 'static,
     Args: 'static + Tuple,
-    Output: 'static + ~const Destruct,
+    Output: 'static + Destruct,
 {
     type Name = Name;
     type Args = Args;
@@ -35,7 +35,7 @@ pub trait EffectList {
     // TODO: Effect is not available until `Fn` is marked as `#[const_trait]` again
     //type EffectConcrete: ~const Fn<<Self::Effect as Effect>::Args, Output = <Self::Effect as Effect>::Output>
     //    + ~const Destruct;
-    type EffectConcrete: ~const Destruct;
+    type EffectConcrete: Destruct;
 
     type Rest: EffectList;
     const IS_END: bool;
