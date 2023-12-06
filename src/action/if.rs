@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
 use crate::condition::Condition;
-use crate::value::bool::ConstNot;
+use crate::value::bool::{ConstAnd, ConstNot};
 use crate::value::ConstValue;
 use crate::variable::list::VariableListIf;
 
@@ -41,9 +41,17 @@ where
     fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         let Self(a, b, ..) = self;
         if const { <Cond::Bool<Ctx> as ConstValue>::VALUE } {
-            a.run_with::<(Cond::Bool<Ctx>, Ctx::Effects, Ctx::Variables)>()
+            a.run_with::<(
+                ConstAnd<Ctx::Strictness, Cond::Bool<Ctx>>,
+                Ctx::Effects,
+                Ctx::Variables,
+            )>()
         } else {
-            b.run_with::<(ConstNot<Cond::Bool<Ctx>>, Ctx::Effects, Ctx::Variables)>()
+            b.run_with::<(
+                ConstAnd<Ctx::Strictness, ConstNot<Cond::Bool<Ctx>>>,
+                Ctx::Effects,
+                Ctx::Variables,
+            )>()
         }
     }
 }

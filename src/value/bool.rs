@@ -21,11 +21,25 @@ impl ConstValue for ConstFalse {
     const VALUE: Self::Type = false;
 }
 
-pub struct ConstNot<Bool: ConstBool>(PhantomData<Bool>);
+pub struct ConstNot<Bool>(PhantomData<Bool>);
 
-impl<Bool: ConstBool> ConstValue for ConstNot<Bool> {
+impl<Bool> ConstValue for ConstNot<Bool>
+where
+    Bool: ConstBool,
+{
     type Type = bool;
     const VALUE: Self::Type = !Bool::VALUE;
+}
+
+pub struct ConstAnd<B1, B2>(PhantomData<(B1, B2)>);
+
+impl<B1, B2> ConstValue for ConstAnd<B1, B2>
+where
+    B1: ConstBool,
+    B2: ConstBool,
+{
+    type Type = bool;
+    const VALUE: Self::Type = B1::VALUE && B2::VALUE;
 }
 
 /// Evaluate the constant value at compile-time if `Bool` is true.
