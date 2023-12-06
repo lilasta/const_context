@@ -1,70 +1,3 @@
-use core::marker::PhantomData;
-
-use crate::action::{Action, ActionContext};
-use crate::value::bool::{ConstBool, ConstNot};
-use crate::value::ConstValue;
-use crate::variable::list::{is_variable_in, VariableList, VariableListIf};
-use crate::variable::Variable;
-
-pub trait Condition {
-    type Bool<Ctx: ActionContext>: ConstBool;
-}
-
-pub struct IsVariableIn<Var: Variable>(PhantomData<Var>);
-
-impl<Var: Variable> Condition for IsVariableIn<Var> {
-    type Bool<Ctx: ActionContext> = ValueOfIsVariableIn<Var, Ctx::Variables>;
-}
-
-pub struct ValueOfIsVariableIn<Var: Variable, Vars: VariableList>(PhantomData<(Var, Vars)>);
-
-impl<Var: Variable, Vars: VariableList> ConstValue for ValueOfIsVariableIn<Var, Vars> {
-    type Type = bool;
-    const VALUE: Self::Type = is_variable_in::<Vars, Var>();
-}
-
-pub struct IfAction<Cond, A, B>(A, B, PhantomData<Cond>);
-
-impl<Cond, A, B> IfAction<Cond, A, B>
-where
-    Cond: Condition,
-    A: Action,
-    B: Action<Output = A::Output>,
-{
-    #[inline(always)]
-    pub const fn new(a: A, b: B) -> Self {
-        Self(a, b, PhantomData)
-    }
-}
-
-impl<Cond, A, B> Action for IfAction<Cond, A, B>
-where
-    Cond: Condition,
-    A: Action,
-    B: Action<Output = A::Output>,
-{
-    type Output = A::Output;
-    type Context<Ctx: ActionContext> = (
-        Ctx::Strictness,
-        Ctx::Effects, // TODO
-        VariableListIf<
-            Cond::Bool<Ctx>,
-            <A::Context<Ctx> as ActionContext>::Variables,
-            <B::Context<Ctx> as ActionContext>::Variables,
-        >,
-    );
-
-    #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
-        let Self(a, b, ..) = self;
-        if const { <Cond::Bool<Ctx> as ConstValue>::VALUE } {
-            a.run_with::<(Cond::Bool<Ctx>, Ctx::Effects, Ctx::Variables)>()
-        } else {
-            b.run_with::<(ConstNot<Cond::Bool<Ctx>>, Ctx::Effects, Ctx::Variables)>()
-        }
-    }
-}
-
 #[macro_export]
 macro_rules! ctx_if_construct {
     {
@@ -73,7 +6,7 @@ macro_rules! ctx_if_construct {
         then = ($then:expr)
         else = ($else:expr)
     }=> {
-        $crate::conditional::IfAction::<$crate::conditional::IsVariableIn::<$var>, _, _>::new($then, $else)
+        $crate::action::r#if::IfAction::<$crate::condition::IsVariableIn::<$var>, _, _>::new($then, $else)
     };
     {
         predicate = ( $cond:expr )
@@ -85,7 +18,7 @@ macro_rules! ctx_if_construct {
         struct __Condition;
 
         #[doc(hidden)]
-        impl $crate::conditional::Condition for __Condition {
+        impl $crate::condition::Condition for __Condition {
             type Bool<__Ctx: $crate::action::ActionContext> = __ConditionBool<__Ctx>;
         }
 
@@ -101,7 +34,7 @@ macro_rules! ctx_if_construct {
             };
         }
 
-        $crate::conditional::IfAction::<__Condition, _, _>::new($then, $else)
+        $crate::action::r#if::IfAction::<__Condition, _, _>::new($then, $else)
     }}
 }
 
@@ -232,12 +165,6 @@ macro_rules! ctx_if_predicate {
 
 #[macro_export]
 macro_rules! ctx_if {
-    (if set $($rest:tt)*) => {
-        $crate::ctx_if_predicate! {
-            predicate = (set)
-            rest = ($($rest)*)
-        }
-    };
     (if $($rest:tt)*) => {
         $crate::ctx_if_predicate! {
             predicate = ()
@@ -249,6 +176,7 @@ macro_rules! ctx_if {
 #[test]
 #[cfg(test)]
 fn test() {
+    use crate::action::Action;
     use crate::ctx;
 
     type Var = (u32, u32);

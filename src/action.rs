@@ -1,6 +1,7 @@
 pub mod bind;
 pub mod effect_get;
 pub mod effect_set;
+pub mod r#if;
 pub mod lazy;
 pub mod pure;
 pub mod variable_get;
