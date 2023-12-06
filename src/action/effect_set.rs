@@ -20,6 +20,7 @@ where
 {
     type Output = ();
     type Context<Ctx: ActionContext> = (
+        Ctx::Strictness,
         EffectListHas<Eff, EffConcrete, Ctx::Effects>,
         Ctx::Variables,
     );

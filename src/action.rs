@@ -8,20 +8,24 @@ pub mod variable_set;
 pub mod variable_unset;
 
 use crate::effect::{EffectList, EffectListEnd};
+use crate::value::bool::{ConstBool, ConstTrue};
 use crate::variable::list::{VariableList, VariableListEmpty};
 
-pub type InitialActionContext = (EffectListEnd, VariableListEmpty);
+pub type InitialActionContext = (ConstTrue, EffectListEnd, VariableListEmpty);
 
 pub trait ActionContext {
+    type Strictness: ConstBool;
     type Effects: EffectList;
     type Variables: VariableList;
 }
 
-impl<E, V> ActionContext for (E, V)
+impl<S, E, V> ActionContext for (S, E, V)
 where
+    S: ConstBool,
     E: EffectList,
     V: VariableList,
 {
+    type Strictness = S;
     type Effects = E;
     type Variables = V;
 }

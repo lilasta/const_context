@@ -1,3 +1,5 @@
+pub mod bool;
+
 /// The trait used to express a constant value as a type.
 /// ```rust
 /// use const_context::value::ConstValue;

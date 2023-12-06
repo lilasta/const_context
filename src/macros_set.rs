@@ -682,6 +682,7 @@ macro_rules! ctx_set {
         {
             type Output = ();
             type Context<__Ctx: $crate::action::ActionContext> = (
+                __Ctx::Strictness,
                 __Ctx::Effects,
                 $crate::variable::list::VariableListCons<$dst, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>, __Ctx::Variables>
             );

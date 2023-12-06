@@ -4,13 +4,3 @@ version = "0.6.0"
 edition = "2021"
 license = "CC0-1.0"
 publish = false
-
-[dependencies]
-
-[features]
-default = []
-conditional = []
-
-[[example]]
-name = "lock"
-required-features = ["conditional"]

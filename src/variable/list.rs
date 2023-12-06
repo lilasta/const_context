@@ -1,6 +1,7 @@
 use core::marker::PhantomData;
 
 use crate::utils::{is_same_type, str_concat_ct};
+use crate::value::bool::ConstBool;
 use crate::value::ConstValue;
 use crate::variable::Variable;
 
@@ -17,6 +18,9 @@ pub trait VariableList {
 
     /// The rest of the list.
     type Rest: VariableList;
+
+    type IfThen: VariableList;
+    type IfElse: VariableList;
 }
 
 /// Type of list. (Used to find a variable at compile-time)
@@ -24,6 +28,7 @@ pub enum VariableListKind {
     Empty,
     Cons,
     Remove,
+    If(bool),
 }
 
 /// Empty list.
@@ -41,6 +46,8 @@ impl VariableList for VariableListEmpty {
     const VALUE: __VariableListEmptyDummy = unreachable!();
 
     type Rest = VariableListEmpty;
+    type IfThen = VariableListEmpty;
+    type IfElse = VariableListEmpty;
 }
 
 /// List that has a value.
@@ -58,6 +65,31 @@ where
     const VALUE: Var::Type = Value::VALUE;
 
     type Rest = Rest;
+    type IfThen = VariableListEmpty;
+    type IfElse = VariableListEmpty;
+}
+
+pub struct VariableListIf<Bool, Then, Else>(PhantomData<(Bool, Then, Else)>);
+
+/// Dummy type to express variable name and variable type for VariableListIf.
+/// This type must not be used by the user.
+#[doc(hidden)]
+pub struct __VariableListIfDummy;
+
+impl<Bool, Then, Else> VariableList for VariableListIf<Bool, Then, Else>
+where
+    Bool: ConstBool,
+    Then: VariableList,
+    Else: VariableList,
+{
+    const KIND: VariableListKind = VariableListKind::If(Bool::VALUE);
+
+    type Var = (__VariableListIfDummy, __VariableListIfDummy);
+    const VALUE: __VariableListIfDummy = __VariableListIfDummy;
+
+    type Rest = VariableListEmpty;
+    type IfThen = Then;
+    type IfElse = Else;
 }
 
 /// This struct removes the variable value from `List``.
@@ -74,6 +106,8 @@ where
     const VALUE: Var::Type = unreachable!();
 
     type Rest = List;
+    type IfThen = VariableListEmpty;
+    type IfElse = VariableListEmpty;
 }
 
 /// Finds the given variable in the list and returns its value.
@@ -108,6 +142,8 @@ where
 
             value
         }
+        VariableListKind::If(true) => find_variable::<List::IfThen, Var>(),
+        VariableListKind::If(false) => find_variable::<List::IfElse, Var>(),
         _ => find_variable::<List::Rest, Var>(),
     }
 }
@@ -133,6 +169,8 @@ where
             );
             true
         }
+        VariableListKind::If(true) => is_variable_in::<List::IfThen, Var>(),
+        VariableListKind::If(false) => is_variable_in::<List::IfElse, Var>(),
         _ => is_variable_in::<List::Rest, Var>(),
     }
 }

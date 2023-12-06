@@ -21,11 +21,18 @@ where
     Value: ConstValue<Type = Var::Type>,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListCons<Var, Value, Ctx::Variables>);
+    type Context<Ctx: ActionContext> = (
+        Ctx::Strictness,
+        Ctx::Effects,
+        VariableListCons<Var, Value, Ctx::Variables>,
+    );
 
     #[inline(always)]
     fn run_with<Ctx: ActionContext>(self) -> Self::Output {
-        // TODO: Add a strictness option?
-        strict::<Value>();
+        const {
+            if <Ctx::Strictness as ConstValue>::VALUE {
+                strict::<Value>();
+            }
+        }
     }
 }

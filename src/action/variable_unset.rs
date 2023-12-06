@@ -19,7 +19,11 @@ where
     Var: Variable,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> = (Ctx::Effects, VariableListRemove<Var, Ctx::Variables>);
+    type Context<Ctx: ActionContext> = (
+        Ctx::Strictness,
+        Ctx::Effects,
+        VariableListRemove<Var, Ctx::Variables>,
+    );
 
     #[inline(always)]
     fn run_with<Ctx: ActionContext>(self) -> Self::Output {}

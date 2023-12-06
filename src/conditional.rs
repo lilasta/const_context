@@ -1,84 +1,26 @@
-pub mod bool;
-
 use core::marker::PhantomData;
 
 use crate::action::{Action, ActionContext};
-use crate::conditional::bool::{ConstBool, ConstBoolToTypeBool, False, True, TypeBool};
-use crate::variable::list::{is_variable_in, VariableList};
+use crate::value::bool::{ConstBool, ConstNot};
+use crate::value::ConstValue;
+use crate::variable::list::{is_variable_in, VariableList, VariableListIf};
 use crate::variable::Variable;
 
 pub trait Condition {
-    type Bool<Ctx: ActionContext>: TypeBool;
+    type Bool<Ctx: ActionContext>: ConstBool;
 }
 
 pub struct IsVariableIn<Var: Variable>(PhantomData<Var>);
 
 impl<Var: Variable> Condition for IsVariableIn<Var> {
-    type Bool<Ctx: ActionContext> =
-        <ValueOfIsVariableIn<Var, Ctx::Variables> as ConstBoolToTypeBool>::Type;
+    type Bool<Ctx: ActionContext> = ValueOfIsVariableIn<Var, Ctx::Variables>;
 }
 
 pub struct ValueOfIsVariableIn<Var: Variable, Vars: VariableList>(PhantomData<(Var, Vars)>);
 
-impl<Var: Variable, Vars: VariableList> ConstBool for ValueOfIsVariableIn<Var, Vars> {
-    const BOOL: bool = is_variable_in::<Vars, Var>();
-}
-
-pub trait If<Output> {
-    type Action: Action<Output = Output>;
-    fn then(self) -> Self::Action;
-}
-
-pub struct ConcreteIf<Cond, A, B>(A, B, PhantomData<Cond>);
-
-impl<Cond, A, B, Output> ConcreteIf<Cond, A, B>
-where
-    Cond: TypeBool,
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
-{
-    #[inline(always)]
-    pub const fn new(a: A, b: B) -> Self {
-        Self(a, b, PhantomData)
-    }
-}
-
-impl<Cond, A, B, Output> If<Output> for ConcreteIf<Cond, A, B>
-where
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
-    Cond: TypeBool,
-{
-    default type Action = B;
-    default fn then(self) -> Self::Action {
-        unreachable!()
-    }
-}
-
-impl<A, B, Output> If<Output> for ConcreteIf<False, A, B>
-where
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
-{
-    type Action = B;
-
-    #[inline(always)]
-    fn then(self) -> Self::Action {
-        self.1
-    }
-}
-
-impl<A, B, Output> If<Output> for ConcreteIf<True, A, B>
-where
-    A: Action<Output = Output>,
-    B: Action<Output = Output>,
-{
-    type Action = A;
-
-    #[inline(always)]
-    fn then(self) -> Self::Action {
-        self.0
-    }
+impl<Var: Variable, Vars: VariableList> ConstValue for ValueOfIsVariableIn<Var, Vars> {
+    type Type = bool;
+    const VALUE: Self::Type = is_variable_in::<Vars, Var>();
 }
 
 pub struct IfAction<Cond, A, B>(A, B, PhantomData<Cond>);
@@ -102,15 +44,24 @@ where
     B: Action<Output = A::Output>,
 {
     type Output = A::Output;
-    type Context<Ctx: ActionContext> =
-        <<ConcreteIf<Cond::Bool<Ctx>, A, B> as If<A::Output>>::Action as Action>::Context<Ctx>;
+    type Context<Ctx: ActionContext> = (
+        Ctx::Strictness,
+        Ctx::Effects, // TODO
+        VariableListIf<
+            Cond::Bool<Ctx>,
+            <A::Context<Ctx> as ActionContext>::Variables,
+            <B::Context<Ctx> as ActionContext>::Variables,
+        >,
+    );
 
     #[inline(always)]
     fn run_with<Ctx: ActionContext>(self) -> Self::Output {
         let Self(a, b, ..) = self;
-        ConcreteIf::<Cond::Bool<Ctx>, A, B>::new(a, b)
-            .then()
-            .run_with::<Ctx>()
+        if const { <Cond::Bool<Ctx> as ConstValue>::VALUE } {
+            a.run_with::<(Cond::Bool<Ctx>, Ctx::Effects, Ctx::Variables)>()
+        } else {
+            b.run_with::<(ConstNot<Cond::Bool<Ctx>>, Ctx::Effects, Ctx::Variables)>()
+        }
     }
 }
 
@@ -135,15 +86,16 @@ macro_rules! ctx_if_construct {
 
         #[doc(hidden)]
         impl $crate::conditional::Condition for __Condition {
-            type Bool<__Ctx: $crate::action::ActionContext> = <__ConditionBool<__Ctx> as $crate::conditional::bool::ConstBoolToTypeBool>::Type;
+            type Bool<__Ctx: $crate::action::ActionContext> = __ConditionBool<__Ctx>;
         }
 
         #[doc(hidden)]
         struct __ConditionBool<__Ctx: $crate::action::ActionContext>(::core::marker::PhantomData<__Ctx>);
 
         #[doc(hidden)]
-        impl<__Ctx: $crate::action::ActionContext> $crate::conditional::ConstBool for __ConditionBool<__Ctx> {
-            const BOOL: bool = {
+        impl<__Ctx: $crate::action::ActionContext> $crate::value::ConstValue for __ConditionBool<__Ctx> {
+            type Type = bool;
+            const VALUE: Self::Type = {
                 $(let $bind = $crate::variable::list::find_variable::<__Ctx::Variables, $var>();)*
                 $cond
             };
