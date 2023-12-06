@@ -7,7 +7,6 @@
 #![feature(core_intrinsics)]
 #![feature(fn_traits)]
 #![feature(inline_const)]
-#![feature(never_type)]
 #![feature(tuple_trait)]
 #![feature(unboxed_closures)]
 

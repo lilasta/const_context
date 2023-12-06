@@ -130,17 +130,9 @@ where
                 error_unexpected_type::<Var::Type, <List::Var as Variable>::Type>()
             );
 
-            let src = List::VALUE;
-
-            // Cast.
-            // Using transmute_copy instead of transmute to avoid the "cannot transmute between types" error.
+            // Using transmute_unchecked instead of transmute to avoid the "cannot transmute between types" error.
             // SAFETY: Already checked that two types are the same with `is_type_same`.
-            let value = unsafe { core::mem::transmute_copy(&src) };
-
-            // Don't drop src
-            core::mem::forget(src);
-
-            value
+            unsafe { core::intrinsics::transmute_unchecked(List::VALUE) }
         }
         VariableListKind::If(true) => find_variable::<List::IfThen, Var>(),
         VariableListKind::If(false) => find_variable::<List::IfElse, Var>(),

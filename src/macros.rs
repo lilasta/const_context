@@ -272,7 +272,7 @@ macro_rules! ctx_action {
         $crate::action::effect_get::GetEffectAction::<$f>::new()
     };
     (panic $msg:expr) => {
-        // This is strictly evaluated, so it will cause a compile error.
+        // This will be strictly evaluated, so it will cause a compile error.
         $crate::ctx_action!(set () = panic!($msg))
     };
     ($action:expr) => {
