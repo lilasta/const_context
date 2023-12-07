@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 use crate::effect::{Effect, EffectListHas};
 
 #[derive(Clone, Copy)]
@@ -19,12 +19,12 @@ where
     EffConcrete: 'static + Fn<Eff::Args, Output = Eff::Output>,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> = (
+    type Context<Ctx: ConstContext> = (
         Ctx::Strictness,
         EffectListHas<Eff, EffConcrete, Ctx::Effects>,
         Ctx::Variables,
     );
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {}
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {}
 }

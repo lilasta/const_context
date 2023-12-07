@@ -816,14 +816,14 @@ macro_rules! ctx_set {
 
         #[doc(hidden)]
         struct __CustomConstValue
-            <__Ctx: $crate::action::ActionContext, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
+            <__Ctx: $crate::context::ConstContext, $($generic_name,)* $(const $generic_const : $generic_const_type,)*>
             (::core::marker::PhantomData<(__Ctx, $($generic_name,)*)>);
 
         #[doc(hidden)]
         impl<__Ctx, $($generic_name,)* $(const $generic_const : $generic_const_type,)*> $crate::value::ConstValue
         for __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>
         where
-            __Ctx: $crate::action::ActionContext,
+            __Ctx: $crate::context::ConstContext,
             $($generic_bound)*
         {
             type Type = <$dst as $crate::variable::Variable>::Type;
@@ -842,14 +842,14 @@ macro_rules! ctx_set {
             $($generic_bound)*
         {
             type Output = ();
-            type Context<__Ctx: $crate::action::ActionContext> = (
+            type Context<__Ctx: $crate::context::ConstContext> = (
                 __Ctx::Strictness,
                 __Ctx::Effects,
                 $crate::variable::list::VariableListCons<$dst, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>, __Ctx::Variables>
             );
 
             #[inline(always)]
-            fn run_with<__Ctx: $crate::action::ActionContext>(self) -> Self::Output {
+            fn run_with<__Ctx: $crate::context::ConstContext>(self) -> Self::Output {
                 $crate::value::bool::strict_if::<__Ctx::Strictness, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>>();
             }
         }

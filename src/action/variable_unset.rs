@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 use crate::variable::list::VariableListRemove;
 use crate::variable::Variable;
 
@@ -19,12 +19,12 @@ where
     Var: Variable,
 {
     type Output = ();
-    type Context<Ctx: ActionContext> = (
+    type Context<Ctx: ConstContext> = (
         Ctx::Strictness,
         Ctx::Effects,
         VariableListRemove<Var, Ctx::Variables>,
     );
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {}
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {}
 }

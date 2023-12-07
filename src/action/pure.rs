@@ -1,4 +1,4 @@
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 
 #[derive(Clone, Copy)]
 pub struct PureAction<Value>(Value);
@@ -12,10 +12,10 @@ impl<Value> PureAction<Value> {
 
 impl<Value> Action for PureAction<Value> {
     type Output = Value;
-    type Context<Ctx: ActionContext> = Ctx;
+    type Context<Ctx: ConstContext> = Ctx;
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         self.0
     }
 }

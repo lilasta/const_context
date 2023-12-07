@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 use crate::effect::{Effect, RuntimeEffect};
 
 #[derive(Clone, Copy)]
@@ -18,10 +18,10 @@ where
     Eff: Effect,
 {
     type Output = RuntimeEffect<Eff>;
-    type Context<Ctx: ActionContext> = Ctx;
+    type Context<Ctx: ConstContext> = Ctx;
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         crate::effect::get::<Ctx::Effects, Eff>()
     }
 }

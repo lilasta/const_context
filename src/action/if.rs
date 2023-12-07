@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 use crate::condition::Condition;
 use crate::value::bool::{ConstAnd, ConstNot};
 use crate::value::ConstValue;
@@ -28,18 +28,18 @@ where
     ActionB: Action<Output = ActionA::Output>,
 {
     type Output = ActionA::Output;
-    type Context<Ctx: ActionContext> = (
+    type Context<Ctx: ConstContext> = (
         Ctx::Strictness,
         Ctx::Effects, // TODO
         VariableListIf<
             Cond::Bool<Ctx>,
-            <ActionA::Context<Ctx> as ActionContext>::Variables,
-            <ActionB::Context<Ctx> as ActionContext>::Variables,
+            <ActionA::Context<Ctx> as ConstContext>::Variables,
+            <ActionB::Context<Ctx> as ConstContext>::Variables,
         >,
     );
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         let Self(a, b, rt_ctx, ..) = self;
         if const { <Cond::Bool<Ctx> as ConstValue>::VALUE } {
             a(rt_ctx).run_with::<(

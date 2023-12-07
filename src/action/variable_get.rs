@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 use crate::variable::list::find_variable;
 use crate::variable::Variable;
 
@@ -19,10 +19,10 @@ where
     Var: Variable,
 {
     type Output = Var::Type;
-    type Context<Ctx: ActionContext> = Ctx;
+    type Context<Ctx: ConstContext> = Ctx;
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         const { find_variable::<Ctx::Variables, Var>() }
     }
 }

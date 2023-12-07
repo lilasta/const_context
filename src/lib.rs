@@ -12,6 +12,7 @@
 
 pub mod action;
 pub mod condition;
+pub mod context;
 pub mod effect;
 pub mod macros;
 pub mod macros_set;

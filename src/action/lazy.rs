@@ -1,4 +1,4 @@
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 
 #[derive(Clone, Copy)]
 pub struct LazyAction<Closure>(Closure);
@@ -16,10 +16,10 @@ where
     A: Action,
 {
     type Output = A::Output;
-    type Context<Ctx: ActionContext> = A::Context<Ctx>;
+    type Context<Ctx: ConstContext> = A::Context<Ctx>;
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         let Self(closure) = self;
         closure().run_with::<Ctx>()
     }

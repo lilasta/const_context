@@ -1,4 +1,4 @@
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 
 #[derive(Clone, Copy)]
 pub struct BindAction<RuntimeContext, PreviousAction, ActionConstructor>(
@@ -32,10 +32,10 @@ where
     NextAction: Action,
 {
     type Output = NextAction::Output;
-    type Context<Ctx: ActionContext> = NextAction::Context<PreviousAction::Context<Ctx>>;
+    type Context<Ctx: ConstContext> = NextAction::Context<PreviousAction::Context<Ctx>>;
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         let Self(rt_ctx, action, constructor) = self;
         let output = action.run_with::<Ctx>();
         constructor(output, rt_ctx).run_with::<PreviousAction::Context<Ctx>>()

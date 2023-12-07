@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::action::{Action, ActionContext};
+use crate::action::{Action, ConstContext};
 use crate::variable::list::is_variable_in;
 use crate::variable::Variable;
 
@@ -19,10 +19,10 @@ where
     Var: Variable,
 {
     type Output = bool;
-    type Context<Ctx: ActionContext> = Ctx;
+    type Context<Ctx: ConstContext> = Ctx;
 
     #[inline(always)]
-    fn run_with<Ctx: ActionContext>(self) -> Self::Output {
+    fn run_with<Ctx: ConstContext>(self) -> Self::Output {
         const { is_variable_in::<Ctx::Variables, Var>() }
     }
 }
