@@ -16,13 +16,6 @@ macro_rules! ctx {
 #[macro_export]
 macro_rules! ctx_parse {
     {
-        action = ()
-        binds = ($($binds:tt)*)
-        rest = ()
-    } => {
-        $crate::ctx_action!()
-    };
-    {
         action = (if get $var:ty)
         binds = ($($binds:tt)*)
         rest = ($($rest:tt)*)
@@ -73,13 +66,6 @@ macro_rules! ctx_parse {
             },
         )
     }};
-    {
-        action = ($($action:tt)*)
-        binds = ($($binds:tt)*)
-        rest = ()
-    } => {
-        $crate::ctx_action!($($action)*)
-    };
     {
         action = (_ <- move $name:ident)
         binds = ($($binds:tt)*)
@@ -255,20 +241,11 @@ macro_rules! ctx_parse {
         binds = ($($binds:tt)*)
         rest = (; $($rest:tt)*)
     } => {
-        $crate::action::bind::BindAction::new(
-            $crate::ctx_action!($($action)*),
-            $crate::ctx_rtc_pack!($($binds)*),
-            #[allow(unused_variables)]
-            #[inline(always)]
-            move |_, __rt_ctx| {
-                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
-                $crate::ctx_parse! {
-                    action = ()
-                    binds = ($($binds)*)
-                    rest = ($($rest)*)
-                }
-            },
-        )
+        $crate::ctx_parse! {
+            action = (_ <- $($action)*)
+            binds = ($($binds)*)
+            rest = (; $($rest)*)
+        }
     };
     {
         action = ($($action:tt)*)
@@ -280,7 +257,14 @@ macro_rules! ctx_parse {
             binds = ($($binds)*)
             rest = ($($rest)*)
         }
-    }
+    };
+    {
+        action = ($($action:tt)*)
+        binds = ($($binds:tt)*)
+        rest = ()
+    } => {
+        $crate::ctx_action!($($action)*)
+    };
 }
 
 #[doc(hidden)]
