@@ -1,6 +1,5 @@
 #![cfg_attr(not(test), no_std)]
 #![feature(const_heap)]
-#![feature(const_refs_to_cell)]
 #![feature(const_trait_impl)]
 #![feature(const_type_id)]
 #![feature(const_type_name)]
