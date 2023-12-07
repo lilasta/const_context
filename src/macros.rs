@@ -23,6 +23,57 @@ macro_rules! ctx_parse {
         $crate::ctx_action!()
     };
     {
+        action = (if get $var:ty)
+        binds = ($($binds:tt)*)
+        rest = ($($rest:tt)*)
+    } => {
+        $crate::ctx_parse! {
+            action = (if $crate::condition::GetBool<$var>)
+            binds = ($($binds)*)
+            rest = ($($rest)*)
+        }
+    };
+    {
+        action = (if set? $var:ty)
+        binds = ($($binds:tt)*)
+        rest = ($($rest:tt)*)
+    } => {
+        $crate::ctx_parse! {
+            action = (if $crate::condition::IsSet<$var>)
+            binds = ($($binds)*)
+            rest = ($($rest)*)
+        }
+    };
+    {
+        action = (if $var:ty { $($then:tt)* } else { $($else:tt)* })
+        binds = ($($binds:tt)*)
+        rest = ($(;)? $($rest:tt)*)
+    } => {{
+        $crate::action::r#if::IfAction::<$var, _, _, _>::new(
+            $crate::ctx_rtc_pack!($($binds)*),
+            #[allow(unused_variables)]
+            #[inline(always)]
+            move |__rt_ctx| {
+                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
+                $crate::ctx_parse! {
+                    action = ()
+                    binds = ($($binds)*)
+                    rest = ($($then)* $($rest)*)
+                }
+            },
+            #[allow(unused_variables)]
+            #[inline(always)]
+            move |__rt_ctx| {
+                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
+                $crate::ctx_parse! {
+                    action = ()
+                    binds = ($($binds)*)
+                    rest = ($($else)* $($rest)*)
+                }
+            },
+        )
+    }};
+    {
         action = ($($action:tt)*)
         binds = ($($binds:tt)*)
         rest = ()
@@ -241,8 +292,11 @@ macro_rules! ctx_action {
     (pure $e:expr) => {
         $crate::action::pure::PureAction::new($e)
     };
-    (get $cvar:ty) => {
-        $crate::action::variable_get::GetAction::<$cvar>::new()
+    (get $var:ty) => {
+        $crate::action::variable_get::GetAction::<$var>::new()
+    };
+    (set? $var:ty) => {
+        $crate::action::variable_isset::IsSetAction::<$var>::new()
     };
     (set $var:ty = $e:expr) => {{
         #[doc(hidden)]

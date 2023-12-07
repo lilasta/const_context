@@ -127,4 +127,24 @@ fn test() {
     };
 
     assert_eq!(action.run(), ());
+
+    #[derive(Debug)]
+    struct I32(i32);
+
+    let action = ctx! {
+        let test = I32(0i32);
+        set Test: bool = false;
+        if get (Test, bool) {
+            if get (Test, bool) {
+                let _ = println!("{:?}", test);
+                panic "test";
+            } else {
+                let _ = println!("{:?}", test);
+            }
+        } else {
+            let _ = println!("{:?}", test);
+        }
+    };
+
+    assert_eq!(action.run(), ());
 }

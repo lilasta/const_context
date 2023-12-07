@@ -14,7 +14,6 @@ pub mod action;
 pub mod condition;
 pub mod effect;
 pub mod macros;
-pub mod macros_if;
 pub mod macros_set;
 pub mod value;
 pub mod variable;

@@ -2,7 +2,7 @@ use std::cell::UnsafeCell;
 use std::rc::Rc;
 
 use const_context::action::Action;
-use const_context::{ctx, ctx_if};
+use const_context::ctx;
 
 pub type Id = usize;
 
@@ -16,11 +16,12 @@ impl<const ID: Id, T> Lock<ID, T> {
     }
 
     pub fn lock(&self) -> impl Action {
-        ctx_if! {
-            if set (Locked<ID>, ()) then
-                ctx! { panic "Double locks" }
-            else
-                ctx! { set Locked<ID>: () = () where const ID: Id = ID; }
+        ctx! {
+            if set? (Locked<ID>, ()) {
+                panic "Double locks";
+            } else {
+                set Locked<ID>: () = () where const ID: Id = ID;
+            }
         }
     }
 
@@ -31,11 +32,12 @@ impl<const ID: Id, T> Lock<ID, T> {
     }
 
     pub fn modify<'a>(&'a self, f: impl FnOnce(&mut T) + 'a) -> impl 'a + Action {
-        ctx_if! {
-            if set (Locked<ID>, ()) then
-                ctx! { let _ = f(unsafe { &mut *UnsafeCell::raw_get(&self.0) }); }
-            else
-                ctx! { panic "Not locked" }
+        ctx! {
+            if set? (Locked<ID>, ()) {
+                let _ = f(unsafe { &mut *UnsafeCell::raw_get(&self.0) });
+            } else {
+                panic "Not locked";
+            }
         }
     }
 }
@@ -48,11 +50,12 @@ impl<const ID: Id, T> RcLock<ID, T> {
     }
 
     pub fn lock(&self) -> impl Action {
-        ctx_if! {
-            if set (Locked<ID>, ()) then
-                ctx! { panic "Double locks" }
-            else
-                ctx! { set Locked<ID>: () = () where const ID: Id = ID; }
+        ctx! {
+            if set? (Locked<ID>, ()) {
+                panic "Double locks";
+            } else {
+                set Locked<ID>: () = () where const ID: Id = ID;
+            }
         }
     }
 
@@ -65,11 +68,12 @@ impl<const ID: Id, T> RcLock<ID, T> {
     pub fn modify(&self, f: impl FnOnce(&mut T)) -> impl Action {
         let inner = self.0.clone();
 
-        ctx_if! {
-            if set (Locked<ID>, ()) then
-                ctx! { let _ = f(unsafe { &mut *UnsafeCell::raw_get(&*inner) }); }
-            else
-                ctx! { panic "Not locked" }
+        ctx! {
+            if set? (Locked<ID>, ()) {
+                let _ = f(unsafe { &mut *UnsafeCell::raw_get(&*inner) });
+            } else {
+                panic "Not locked";
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ pub mod r#if;
 pub mod lazy;
 pub mod pure;
 pub mod variable_get;
+pub mod variable_isset;
 pub mod variable_set;
 pub mod variable_unset;
 
