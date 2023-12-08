@@ -40,7 +40,7 @@ macro_rules! ctx_parse {
     {
         action = (if $var:ty { $($then:tt)* } else { $($else:tt)* })
         binds = ($($binds:tt)*)
-        rest = ($(;)? $($rest:tt)*)
+        rest = ($($rest:tt)*)
     } => {{
         $crate::action::r#if::IfAction::<$var, _, _, _>::new(
             $crate::ctx_rtc_pack!($($binds)*),
@@ -51,7 +51,7 @@ macro_rules! ctx_parse {
                 $crate::ctx_parse! {
                     action = ()
                     binds = ($($binds)*)
-                    rest = ($($then)* $($rest)*)
+                    rest = ($($then)*; $($rest)*)
                 }
             },
             #[allow(unused_variables)]
@@ -61,7 +61,7 @@ macro_rules! ctx_parse {
                 $crate::ctx_parse! {
                     action = ()
                     binds = ($($binds)*)
-                    rest = ($($else)* $($rest)*)
+                    rest = ($($else)*; $($rest)*)
                 }
             },
         )

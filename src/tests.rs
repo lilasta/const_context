@@ -141,6 +141,7 @@ fn test() {
             } else {
                 let _ = println!("{:?}", test);
             }
+            let _ = println!("{:?}", test);
         } else {
             let _ = println!("{:?}", test);
         }
