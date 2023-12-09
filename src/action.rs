@@ -9,7 +9,7 @@ pub mod variable_isset;
 pub mod variable_set;
 pub mod variable_unset;
 
-use crate::context::{ConstContext, InitialActionContext};
+use crate::context::{ConstContext, InitialConstContext};
 
 pub trait Action: Sized {
     type Output;
@@ -17,7 +17,7 @@ pub trait Action: Sized {
 
     #[inline(always)]
     fn run(self) -> Self::Output {
-        self.run_with::<InitialActionContext>()
+        self.run_with::<InitialConstContext>()
     }
 
     fn run_with<Ctx: ConstContext>(self) -> Self::Output;

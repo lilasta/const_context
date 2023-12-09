@@ -2,7 +2,7 @@ use crate::effect::{EffectList, EffectListEnd};
 use crate::value::bool::{ConstBool, ConstTrue};
 use crate::variable::list::{VariableList, VariableListEmpty};
 
-pub type InitialActionContext = (ConstTrue, EffectListEnd, VariableListEmpty);
+pub type InitialConstContext = (ConstTrue, EffectListEnd, VariableListEmpty);
 
 pub trait ConstContext {
     type Strictness: ConstBool;
