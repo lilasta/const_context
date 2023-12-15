@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::utils::{is_same_type, str_concat_ct};
+use crate::utils::is_same_type;
 use crate::value::bool::ConstBool;
 use crate::value::ConstValue;
 use crate::variable::Variable;
@@ -43,7 +43,7 @@ impl VariableList for VariableListEmpty {
     const KIND: VariableListKind = VariableListKind::Empty;
 
     type Var = (__VariableListEmptyDummy, __VariableListEmptyDummy);
-    const VALUE: __VariableListEmptyDummy = unreachable!();
+    const VALUE: __VariableListEmptyDummy = __VariableListEmptyDummy;
 
     type Rest = VariableListEmpty;
     type IfThen = VariableListEmpty;
@@ -121,18 +121,17 @@ where
     let is_type_same = is_same_type::<Var::Type, <List::Var as Variable>::Type>();
 
     match List::KIND {
-        VariableListKind::Empty => panic!("{}", error_not_found::<Var::Name>()),
-        VariableListKind::Remove if is_name_same => panic!("{}", error_not_found::<Var::Name>()),
+        VariableListKind::Empty => panic!("{}", error::not_found::<Var::Name>()),
+        VariableListKind::Remove if is_name_same => panic!("{}", error::not_found::<Var::Name>()),
         VariableListKind::Cons if is_name_same => {
             assert!(
                 is_type_same,
                 "{}",
-                error_unexpected_type::<Var::Type, <List::Var as Variable>::Type>()
+                error::unexpected_type::<Var::Type, <List::Var as Variable>::Type>()
             );
 
-            // Using transmute_unchecked instead of transmute to avoid the "cannot transmute between types" error.
             // SAFETY: Already checked that two types are the same with `is_type_same`.
-            unsafe { core::intrinsics::transmute_unchecked(List::VALUE) }
+            unsafe { crate::utils::transmute(List::VALUE) }
         }
         VariableListKind::If(true) => find_variable::<List::IfThen, Var>(),
         VariableListKind::If(false) => find_variable::<List::IfElse, Var>(),
@@ -157,7 +156,7 @@ where
             assert!(
                 is_type_same,
                 "{}",
-                error_unexpected_type::<Var::Type, <List::Var as Variable>::Type>()
+                error::unexpected_type::<Var::Type, <List::Var as Variable>::Type>()
             );
             true
         }
@@ -167,19 +166,16 @@ where
     }
 }
 
-const fn error_not_found<Key>() -> &'static str {
-    let type_name = core::any::type_name::<Key>();
-    str_concat_ct(
-        str_concat_ct("The key `", type_name),
-        "` is not found in current context.",
-    )
-}
+mod error {
+    struct TheKeyIsNotFoundInCurrentContext<T>(T);
 
-const fn error_unexpected_type<Expected, Value>() -> &'static str {
-    let type_name_expect = core::any::type_name::<Expected>();
-    let type_name_value = core::any::type_name::<Value>();
-    str_concat_ct(
-        str_concat_ct("Mismatched types: expected `", type_name_expect),
-        str_concat_ct("`, found `", str_concat_ct(type_name_value, "`.")),
-    )
+    struct MismatchedTypesExpectedAndFound<T>(T);
+
+    pub(super) const fn not_found<T>() -> &'static str {
+        core::any::type_name::<TheKeyIsNotFoundInCurrentContext<T>>()
+    }
+
+    pub(super) const fn unexpected_type<T, U>() -> &'static str {
+        core::any::type_name::<MismatchedTypesExpectedAndFound<(T, U)>>()
+    }
 }

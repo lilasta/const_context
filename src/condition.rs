@@ -10,6 +10,10 @@ pub trait Condition {
     type Bool<Ctx: ConstContext>: ConstBool;
 }
 
+impl<T: ConstValue<Type = bool>> Condition for T {
+    type Bool<Ctx: ConstContext> = Self;
+}
+
 pub struct IsSet<Var>(PhantomData<Var>)
 where
     Var: Variable;

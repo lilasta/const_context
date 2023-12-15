@@ -3,7 +3,6 @@
 #![feature(const_trait_impl)]
 #![feature(const_type_id)]
 #![feature(const_type_name)]
-#![feature(core_intrinsics)]
 #![feature(fn_traits)]
 #![feature(inline_const)]
 #![feature(tuple_trait)]
