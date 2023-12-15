@@ -23,6 +23,16 @@ pub trait ConstValue {
 
 /// Evaluate the constant value at compile-time.
 #[inline(always)]
-pub const fn strict<V: ConstValue>() {
-    const { core::mem::forget(V::VALUE) }
+pub const fn strict<Value: ConstValue>() {
+    const { core::mem::forget(Value::VALUE) }
+}
+
+/// Evaluate the constant value at compile-time if `Bool` is true.
+#[inline(always)]
+pub const fn strict_if<Bool: ConstValue<Type = bool>, Value: ConstValue>() {
+    const {
+        if Bool::VALUE {
+            strict::<Value>();
+        }
+    }
 }

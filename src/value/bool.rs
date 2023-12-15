@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crate::value::{strict, ConstValue};
+use crate::value::ConstValue;
 
 /// This is the same as `ConstValue<Type = bool>`, just syntactic sugar.
 pub trait ConstBool: ConstValue<Type = bool> {}
@@ -40,14 +40,4 @@ where
 {
     type Type = bool;
     const VALUE: Self::Type = B1::VALUE && B2::VALUE;
-}
-
-/// Evaluate the constant value at compile-time if `Bool` is true.
-#[inline(always)]
-pub const fn strict_if<Bool: ConstBool, V: ConstValue>() {
-    const {
-        if Bool::VALUE {
-            strict::<V>();
-        }
-    }
 }

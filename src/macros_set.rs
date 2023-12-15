@@ -850,7 +850,7 @@ macro_rules! ctx_set {
 
             #[inline(always)]
             fn run_with<__Ctx: $crate::context::ConstContext>(self) -> Self::Output {
-                $crate::value::bool::strict_if::<__Ctx::Strictness, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>>();
+                $crate::value::strict_if::<__Ctx::Strictness, __CustomConstValue<__Ctx, $($generic_name,)* $($generic_const,)*>>();
             }
         }
 

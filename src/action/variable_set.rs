@@ -1,8 +1,7 @@
 use core::marker::PhantomData;
 
 use crate::action::{Action, ConstContext};
-use crate::value::bool::strict_if;
-use crate::value::ConstValue;
+use crate::value::{strict_if, ConstValue};
 use crate::variable::list::VariableListCons;
 use crate::variable::Variable;
 
