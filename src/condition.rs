@@ -10,7 +10,7 @@ pub trait Condition {
     type Bool<Ctx: ConstContext>: ConstBool;
 }
 
-impl<T: ConstValue<Type = bool>> Condition for T {
+impl<T: ConstBool> Condition for T {
     type Bool<Ctx: ConstContext> = Self;
 }
 
