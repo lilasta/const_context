@@ -20,56 +20,64 @@ macro_rules! ctx {
 #[macro_export]
 macro_rules! ctx_parse {
     {
-        action = (if get $var:ty)
+        action = (_ <- if [ $cond:ty ] { $($then:tt)* } else { $($else:tt)* })
         binds = ($($binds:tt)*)
         rest = ($($rest:tt)*)
     } => {
-        $crate::ctx_parse! {
-            action = (if $crate::condition::GetBool<$var>)
-            binds = ($($binds)*)
-            rest = ($($rest)*)
-        }
-    };
-    {
-        action = (if set? $var:ty)
-        binds = ($($binds:tt)*)
-        rest = ($($rest:tt)*)
-    } => {
-        $crate::ctx_parse! {
-            action = (if $crate::condition::IsSet<$var>)
-            binds = ($($binds)*)
-            rest = ($($rest)*)
-        }
-    };
-    {
-        action = (if $var:ty { $($then:tt)* } else { $($else:tt)* })
-        binds = ($($binds:tt)*)
-        rest = ($($rest:tt)*)
-    } => {{
-        $crate::action::r#if::IfAction::<$var, _, _, _>::new(
-            $crate::ctx_rtc_pack!($($binds)*),
-            #[allow(unused_variables)]
-            #[inline(always)]
-            move |__rt_ctx| {
-                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
-                $crate::ctx_parse! {
-                    action = ()
-                    binds = ($($binds)*)
-                    rest = ($($then)*; $($rest)*)
-                }
+        $crate::action::bind::BindAction::new(
+            $crate::ctx_if! {
+                condition = ($cond)
+                binds = ($($binds)*)
+                then = ($($then)*)
+                else = ($($else)*)
             },
             #[allow(unused_variables)]
             #[inline(always)]
-            move |__rt_ctx| {
+            move |(_, __rt_ctx)| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
                     binds = ($($binds)*)
-                    rest = ($($else)*; $($rest)*)
+                    rest = ($($rest)*)
                 }
             },
         )
-    }};
+    };
+    {
+        action = ($name:ident <- if [ $cond:ty ] { $($then:tt)* } else { $($else:tt)* })
+        binds = ($($binds:tt)*)
+        rest = ($($rest:tt)*)
+    } => {
+        $crate::action::bind::BindAction::new(
+            $crate::ctx_if! {
+                condition = ($cond)
+                binds = ($($binds)*)
+                then = ($($then)*)
+                else = ($($else)*)
+            },
+            #[allow(unused_variables)]
+            #[inline(always)]
+            move |($name, __rt_ctx)| {
+                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
+                $crate::ctx_parse! {
+                    action = ()
+                    binds = ($($binds)*)
+                    rest = ($($rest)*)
+                }
+            },
+        )
+    };
+    {
+        action = (if [ $cond:ty ] { $($then:tt)* } else { $($else:tt)* })
+        binds = ($($binds:tt)*)
+        rest = ($($rest:tt)*)
+    } => {
+        $crate::ctx_parse! {
+            action = (_ <- if [ $cond ] { $($then)* } else { $($else)* })
+            binds = ($($binds)*)
+            rest = ($($rest)*)
+        }
+    };
     {
         action = (_ <- move $name:ident)
         binds = ($($binds:tt)*)
@@ -285,7 +293,43 @@ macro_rules! ctx_parse {
     } => {
         $crate::action::map::MapAction::new(
             $crate::ctx_action!($($action)*),
+            #[inline(always)]
             move |__value| (__value, $crate::ctx_rtc_pack!($($binds)*)),
+        )
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! ctx_if {
+    {
+        condition = ($($cond:tt)*)
+        binds = ($($binds:tt)*)
+        then = ($($then:tt)*)
+        else = ($($else:tt)*)
+    } => {
+        $crate::action::r#if::IfAction::<$($cond)*, _, _, _>::new(
+            $crate::ctx_rtc_pack!($($binds)*),
+            #[allow(unused_variables)]
+            #[inline(always)]
+            move |__rt_ctx| {
+                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
+                $crate::ctx_parse! {
+                    action = ()
+                    binds = ($($binds)*)
+                    rest = ($($then)*)
+                }
+            },
+            #[allow(unused_variables)]
+            #[inline(always)]
+            move |__rt_ctx| {
+                $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
+                $crate::ctx_parse! {
+                    action = ()
+                    binds = ($($binds)*)
+                    rest = ($($else)*)
+                }
+            },
         )
     };
 }

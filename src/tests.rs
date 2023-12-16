@@ -2,6 +2,7 @@
 #[cfg(test)]
 fn test() {
     use crate::action::Action;
+    use crate::condition::GetBool;
     use crate::ctx;
 
     type Var = ((), u32);
@@ -134,8 +135,8 @@ fn test() {
     let action = ctx! {
         let test = I32(0i32);
         set Test: bool = false;
-        if get (Test, bool) {
-            if get (Test, bool) {
+        if [GetBool<(Test, bool)>] {
+            if [GetBool<(Test, bool)>] {
                 let _ = println!("{:?}", test);
                 panic "test";
             } else {

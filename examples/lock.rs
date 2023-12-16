@@ -2,6 +2,7 @@ use std::cell::UnsafeCell;
 use std::rc::Rc;
 
 use const_context::action::Action;
+use const_context::condition::IsSet;
 use const_context::ctx;
 
 pub type Id = usize;
@@ -17,7 +18,7 @@ impl<const ID: Id, T> Lock<ID, T> {
 
     pub fn lock(&self) -> impl Action {
         ctx! {
-            if set? (Locked<ID>, ()) {
+            if [IsSet<(Locked<ID>, ())>] {
                 panic "Double locks";
             } else {
                 set Locked<ID>: () = () where const ID: Id = ID;
@@ -33,7 +34,7 @@ impl<const ID: Id, T> Lock<ID, T> {
 
     pub fn modify<'a>(&'a self, f: impl FnOnce(&mut T) + 'a) -> impl 'a + Action {
         ctx! {
-            if set? (Locked<ID>, ()) {
+            if [IsSet<(Locked<ID>, ())>] {
                 let _ = f(unsafe { &mut *UnsafeCell::raw_get(&self.0) });
             } else {
                 panic "Not locked";
@@ -51,7 +52,7 @@ impl<const ID: Id, T> RcLock<ID, T> {
 
     pub fn lock(&self) -> impl Action {
         ctx! {
-            if set? (Locked<ID>, ()) {
+            if [IsSet<(Locked<ID>, ())>] {
                 panic "Double locks";
             } else {
                 set Locked<ID>: () = () where const ID: Id = ID;
@@ -69,7 +70,7 @@ impl<const ID: Id, T> RcLock<ID, T> {
         let inner = self.0.clone();
 
         ctx! {
-            if set? (Locked<ID>, ()) {
+            if [IsSet<(Locked<ID>, ())>] {
                 let _ = f(unsafe { &mut *UnsafeCell::raw_get(&*inner) });
             } else {
                 panic "Not locked";
