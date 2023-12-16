@@ -122,8 +122,8 @@ fn test() {
     let action = ctx! {
         let a = Test;
         let b = Test;
-        c <- move a;
-        let _ = drop(c);
+        a <- move a;
+        let _ = drop(a);
         let _ = println!("{:?}", b);
     };
 

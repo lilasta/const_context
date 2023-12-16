@@ -73,7 +73,6 @@ fn where_set<const OUTER_VAL: usize, OuterT: 'static>() -> impl Action {
 
 Other things to know:
 
-- Shadowing is not allowed.
 - Continuation is not currently supported.
     - You can't use the effect feature to define `resume` or `return`.
 
