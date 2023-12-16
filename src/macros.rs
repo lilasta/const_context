@@ -87,6 +87,7 @@ macro_rules! ctx_parse {
             // TODO: Find a way to remove the token
             $crate::action::map::MapAction::new(
                 $crate::ctx_action!(pure $name),
+                #[inline(always)]
                 move |__value| {
                     #[doc(hidden)]
                     struct __Moved;
@@ -138,6 +139,7 @@ macro_rules! ctx_parse {
             // TODO: Find a way to remove the token
             $crate::action::map::MapAction::new(
                 $crate::ctx_action!(pure $name),
+                #[inline(always)]
                 move |__value| {
                     #[doc(hidden)]
                     struct __Moved;
