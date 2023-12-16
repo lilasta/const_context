@@ -321,25 +321,20 @@ macro_rules! ctx_action {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! ctx_rtc_pack {
-    ($($name:ident)*) => {{
-        #[doc(hidden)]
-        #[allow(non_camel_case_types)]
-        struct __RuntimeContext<$($name),*> {
-            $($name : $name),*
-        }
-
-        __RuntimeContext {
-            $($name),*
-        }
-    }};
+    () => {
+        ()
+    };
+    ($name:ident $($rest:ident)*) => {
+        ($name, $crate::ctx_rtc_pack!($($rest)*))
+    };
 }
 
 #[doc(hidden)]
 #[macro_export]
 macro_rules! ctx_rtc_unpack {
-    ($ctx:ident, ) => {};
-    ($ctx:ident, $name:ident $($rest:tt)*) => {
-        let $name = $ctx.$name;
-        $crate::ctx_rtc_unpack!($ctx, $($rest)*)
+    ($ctx:expr,) => {};
+    ($ctx:expr, $name:ident $($rest:tt)*) => {
+        let $name = $ctx.0;
+        $crate::ctx_rtc_unpack!($ctx.1, $($rest)*)
     };
 }
