@@ -3,11 +3,15 @@ macro_rules! ctx {
     { $($rest:tt)* } => {
         $crate::action::lazy::LazyAction::new(
             #[inline(always)]
-            move || $crate::ctx_parse! {
-                action = ()
-                binds = ()
-                rest = ($($rest)*)
-            }
+            move || $crate::action::map::MapAction::new(
+                $crate::ctx_parse! {
+                    action = ()
+                    binds = ()
+                    rest = ($($rest)*)
+                },
+                #[inline(always)]
+                |(__ret, _)| __ret,
+            )
         )
     }
 }
@@ -72,17 +76,19 @@ macro_rules! ctx_parse {
         rest = (; $($rest:tt)*)
     } => {
         $crate::action::bind::BindAction::new(
-            $crate::action::pure::PureAction::new($name),
-            {
-                // TODO: Find a way to remove the token
-                #[doc(hidden)]
-                struct __Moved;
-                let $name = __Moved;
-                $crate::ctx_rtc_pack!($($binds)*)
-            },
+            // TODO: Find a way to remove the token
+            $crate::action::map::MapAction::new(
+                $crate::ctx_action!(pure $name),
+                move |__value| {
+                    #[doc(hidden)]
+                    struct __Moved;
+                    let $name = __Moved;
+                    (__value, $crate::ctx_rtc_pack!($($binds)*))
+                }
+            ),
             #[allow(unused_variables)]
             #[inline(always)]
-            move |_, __rt_ctx| {
+            move |(_, __rt_ctx)| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
@@ -98,11 +104,14 @@ macro_rules! ctx_parse {
         rest = (; $($rest:tt)*)
     } => {
         $crate::action::bind::BindAction::new(
-            $crate::ctx_action!($($action)*),
-            $crate::ctx_rtc_pack!($($binds)*),
+            $crate::ctx_parse! {
+                action = ($($action)*)
+                binds = ($($binds)*)
+                rest = ()
+            },
             #[allow(unused_variables)]
             #[inline(always)]
-            move |_, __rt_ctx| {
+            move |(_, __rt_ctx)| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
@@ -118,17 +127,19 @@ macro_rules! ctx_parse {
         rest = (; $($rest:tt)*)
     } => {
         $crate::action::bind::BindAction::new(
-            $crate::action::pure::PureAction::new($name),
-            {
-                // TODO: Find a way to remove the token
-                #[doc(hidden)]
-                struct __Moved;
-                let $name = __Moved;
-                $crate::ctx_rtc_pack!($($binds)*)
-            },
+            // TODO: Find a way to remove the token
+            $crate::action::map::MapAction::new(
+                $crate::ctx_action!(pure $name),
+                move |__value| {
+                    #[doc(hidden)]
+                    struct __Moved;
+                    let $name = __Moved;
+                    (__value, $crate::ctx_rtc_pack!($($binds)*))
+                }
+            ),
             #[allow(unused_variables)]
             #[inline(always)]
-            move |$var, __rt_ctx| {
+            move |($var, __rt_ctx)| {
                 let __tmp = $var;
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 let $var = __tmp;
@@ -146,11 +157,14 @@ macro_rules! ctx_parse {
         rest = (; $($rest:tt)*)
     } => {
         $crate::action::bind::BindAction::new(
-            $crate::ctx_action!($($action)*),
-            $crate::ctx_rtc_pack!($($binds)*),
+            $crate::ctx_parse! {
+                action = ($($action)*)
+                binds = ($($binds)*)
+                rest = ()
+            },
             #[allow(unused_variables)]
             #[inline(always)]
-            move |$var, __rt_ctx| {
+            move |($var, __rt_ctx)| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
@@ -166,11 +180,14 @@ macro_rules! ctx_parse {
         rest = (; $($rest:tt)*)
     } => {
         $crate::action::bind::BindAction::new(
-            $crate::action::pure::PureAction::new($($e)*),
-            $crate::ctx_rtc_pack!($($binds)*),
+            $crate::ctx_parse! {
+                action = (pure $($e)*)
+                binds = ($($binds)*)
+                rest = ()
+            },
             #[allow(unused_variables)]
             #[inline(always)]
-            move |_ $(: $ty)?, __rt_ctx| {
+            move |(_, __rt_ctx) $(: ($ty, _))?| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
@@ -186,11 +203,14 @@ macro_rules! ctx_parse {
         rest = (; $($rest:tt)*)
     } => {
         $crate::action::bind::BindAction::new(
-            $crate::action::pure::PureAction::new($($e)*),
-            $crate::ctx_rtc_pack!($($binds)*),
+            $crate::ctx_parse! {
+                action = (pure $($e)*)
+                binds = ($($binds)*)
+                rest = ()
+            },
             #[allow(unused_variables)]
             #[inline(always)]
-            move |$var $(: $ty)?, __rt_ctx| {
+            move |($var, __rt_ctx) $(: ($ty, _))?| {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
@@ -263,7 +283,10 @@ macro_rules! ctx_parse {
         binds = ($($binds:tt)*)
         rest = ()
     } => {
-        $crate::ctx_action!($($action)*)
+        $crate::action::map::MapAction::new(
+            $crate::ctx_action!($($action)*),
+            move |__value| (__value, $crate::ctx_rtc_pack!($($binds)*)),
+        )
     };
 }
 

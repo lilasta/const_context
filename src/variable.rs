@@ -3,13 +3,16 @@ pub mod list;
 /// Variables for binding constant values.
 /// ```rust
 /// use const_context::ctx;
+/// use const_context::action::Action;
 ///
 /// struct Zero;
 ///
-/// ctx! {
+/// let action = ctx! {
 ///     // Zero: u64 = 0
 ///     set (Zero, u64) = 0;
 /// };
+///
+/// action.run();
 /// ```
 pub trait Variable {
     /// Variable name.

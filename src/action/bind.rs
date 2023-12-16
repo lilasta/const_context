@@ -1,34 +1,24 @@
 use crate::action::{Action, ConstContext};
 
 #[derive(Clone, Copy)]
-pub struct BindAction<RuntimeContext, PreviousAction, ActionConstructor>(
-    RuntimeContext,
-    PreviousAction,
-    ActionConstructor,
-);
+pub struct BindAction<PreviousAction, ActionConstructor>(PreviousAction, ActionConstructor);
 
-impl<RuntimeContext, PreviousAction, ActionConstructor>
-    BindAction<RuntimeContext, PreviousAction, ActionConstructor>
-{
+impl<PreviousAction, ActionConstructor> BindAction<PreviousAction, ActionConstructor> {
     #[inline(always)]
-    pub const fn new<Ret>(
-        prev: PreviousAction,
-        rt_ctx: RuntimeContext,
-        constructor: ActionConstructor,
-    ) -> Self
+    pub const fn new<Ret>(prev: PreviousAction, constructor: ActionConstructor) -> Self
     where
         PreviousAction: Action,
-        ActionConstructor: FnOnce(PreviousAction::Output, RuntimeContext) -> Ret,
+        ActionConstructor: FnOnce(PreviousAction::Output) -> Ret,
     {
-        Self(rt_ctx, prev, constructor)
+        Self(prev, constructor)
     }
 }
 
-impl<RuntimeContext, PreviousAction, ActionConstructor, NextAction> Action
-    for BindAction<RuntimeContext, PreviousAction, ActionConstructor>
+impl<PreviousAction, ActionConstructor, NextAction> Action
+    for BindAction<PreviousAction, ActionConstructor>
 where
     PreviousAction: Action,
-    ActionConstructor: FnOnce(PreviousAction::Output, RuntimeContext) -> NextAction,
+    ActionConstructor: FnOnce(PreviousAction::Output) -> NextAction,
     NextAction: Action,
 {
     type Output = NextAction::Output;
@@ -36,8 +26,8 @@ where
 
     #[inline(always)]
     fn run_with<Ctx: ConstContext>(self) -> Self::Output {
-        let Self(rt_ctx, action, constructor) = self;
+        let Self(action, constructor) = self;
         let output = action.run_with::<Ctx>();
-        constructor(output, rt_ctx).run_with::<PreviousAction::Context<Ctx>>()
+        constructor(output).run_with::<PreviousAction::Context<Ctx>>()
     }
 }
