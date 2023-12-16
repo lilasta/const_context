@@ -510,16 +510,6 @@ macro_rules! ctx_rtc_pack_check {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! _ctx_rtc_unpack {
-    ($ctx:expr,,$($log:tt)*) => {};
-    ($ctx:expr, $name:ident $($rest:ident)*, $($log:tt)*) => {
-        let $name = $ctx.0;
-        $crate::ctx_rtc_unpack!($ctx.1, $($rest)*, $($log)*)
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
 macro_rules! ctx_rtc_unpack {
     ($ctx:expr, $($binds:ident)*, $($log:tt)*) => {
         $crate::ctx_rtc_unpack_check! {
