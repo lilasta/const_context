@@ -2,7 +2,7 @@
 #[cfg(test)]
 fn test() {
     use crate::action::Action;
-    use crate::condition::GetBool;
+    use crate::condition::{GetBool, IsSet};
     use crate::ctx;
 
     type Var = ((), u32);
@@ -129,23 +129,31 @@ fn test() {
 
     assert_eq!(action.run(), ());
 
-    #[derive(Debug)]
-    struct I32(i32);
-
     let action = ctx! {
-        let test = I32(0i32);
-        set Test: bool = false;
-        if [GetBool<(Test, bool)>] {
-            if [GetBool<(Test, bool)>] {
-                let _ = println!("{:?}", test);
-                panic "test";
-            } else {
-                let _ = println!("{:?}", test);
-            }
-            let _ = println!("{:?}", test);
+        type Var = (Test, bool);
+        set Var = false;
+
+        value <- if [GetBool<Var>] {
+            pure 0u32
         } else {
-            let _ = println!("{:?}", test);
+            pure 42u32
         }
+        let _ = assert_eq!(42u32, value);
+
+        value <- if [IsSet<Var>] {
+            pure 42u32
+        } else {
+            pure 0u32
+        }
+        let _ = assert_eq!(42u32, value);
+
+        unset Var;
+        value <- if [IsSet<Var>] {
+            pure 0u32
+        } else {
+            pure 42u32
+        }
+        let _ = assert_eq!(42u32, value);
     };
 
     assert_eq!(action.run(), ());

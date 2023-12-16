@@ -61,7 +61,7 @@ macro_rules! ctx_parse {
                 $crate::ctx_rtc_unpack!(__rt_ctx, $($binds)*);
                 $crate::ctx_parse! {
                     action = ()
-                    binds = ($($binds)*)
+                    binds = ($name $($binds)*)
                     rest = ($($rest)*)
                 }
             },
