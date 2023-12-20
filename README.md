@@ -73,6 +73,8 @@ fn where_set<const OUTER_VAL: usize, OuterT: 'static>() -> impl Action {
 
 Other things to know:
 
+- You can't bind values as mutable.
+- You can't bind values that refer to other values.
 - Continuation is not currently supported.
     - You can't use the effect feature to define `resume` or `return`.
 
