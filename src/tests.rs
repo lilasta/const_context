@@ -109,7 +109,7 @@ fn test() {
 
     fn _test<const A: usize, T: 'static>() -> impl Action {
         ctx! {
-            set T: usize = A + b
+            set (T, usize) = A + b
             where
                 const A: usize = A,
                 b <- get ((), usize),

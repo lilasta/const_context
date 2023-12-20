@@ -9,6 +9,8 @@ pub type Id = usize;
 
 struct Locked<const ID: Id>;
 
+type LockedVar<const ID: Id> = (Locked<ID>, ());
+
 pub struct Lock<const ID: Id, T>(UnsafeCell<T>);
 
 impl<const ID: Id, T> Lock<ID, T> {
@@ -18,23 +20,23 @@ impl<const ID: Id, T> Lock<ID, T> {
 
     pub fn lock(&self) -> impl Action {
         ctx! {
-            if [IsSet<(Locked<ID>, ())>] {
+            if [IsSet<LockedVar<ID>>] {
                 panic "Double locks";
             } else {
-                set Locked<ID>: () = () where const ID: Id = ID;
+                set LockedVar<ID> = () where const ID: Id = ID;
             }
         }
     }
 
     pub fn unlock(&self) -> impl Action {
         ctx! {
-            unset (Locked<ID>, ());
+            unset LockedVar<ID>;
         }
     }
 
     pub fn modify<'a>(&'a self, f: impl FnOnce(&mut T) + 'a) -> impl 'a + Action {
         ctx! {
-            if [IsSet<(Locked<ID>, ())>] {
+            if [IsSet<LockedVar<ID>>] {
                 let _ = f(unsafe { &mut *UnsafeCell::raw_get(&self.0) });
             } else {
                 panic "Not locked";
@@ -52,17 +54,17 @@ impl<const ID: Id, T> RcLock<ID, T> {
 
     pub fn lock(&self) -> impl Action {
         ctx! {
-            if [IsSet<(Locked<ID>, ())>] {
+            if [IsSet<LockedVar<ID>>] {
                 panic "Double locks";
             } else {
-                set Locked<ID>: () = () where const ID: Id = ID;
+                set LockedVar<ID> = () where const ID: Id = ID;
             }
         }
     }
 
     pub fn unlock(&self) -> impl Action {
         ctx! {
-            unset (Locked<ID>, ());
+            unset LockedVar<ID>;
         }
     }
 
@@ -70,7 +72,7 @@ impl<const ID: Id, T> RcLock<ID, T> {
         let inner = self.0.clone();
 
         ctx! {
-            if [IsSet<(Locked<ID>, ())>] {
+            if [IsSet<LockedVar<ID>>] {
                 let _ = f(unsafe { &mut *UnsafeCell::raw_get(&*inner) });
             } else {
                 panic "Not locked";
